@@ -71,10 +71,10 @@
 
 //#define AUXILARY_PACK ACTIVE
 
-#define TOTAL_IC 2 //max 16
+#define TOTAL_IC 3 //max 16
 #define AUX_PER_IC 6
 #define TEMP_PER_IC 3  //max 16
-#define CELLS_PER_IC 12 //max 16
+#define CELLS_PER_IC 9 //max 16
 #define STAT_REG 4
 #define DATA_LOOP_COUNT_n 5
 #define SEND_DATA_FREQ 8 //(val/10) seconds

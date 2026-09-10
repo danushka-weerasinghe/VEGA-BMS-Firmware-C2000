@@ -2052,9 +2052,9 @@ void analyze_rdata()
     {
         for (local_counter = 0; local_counter < CELLS_PER_IC; local_counter++)
         {
-            if ((local_counter == 11) && (local_counter_ic == 1))
+            if ((local_counter == 4) || (local_counter == 5) || (local_counter == 9) ||(local_counter == 10)|| (local_counter == 11))
             {
-//                local_counter++;
+                local_counter++;
             }
             else
             {
