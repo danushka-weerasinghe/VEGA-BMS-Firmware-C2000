@@ -729,14 +729,6 @@ __interrupt void cpu_timer0_isr(void)
             PDU_setData_local.contactor_on_inverse = 2;
             contactor_operator_fire();
 
-            fc_contactor_operator();
-
-            FC_CON_DRIVER_EN;
-
-                        if (PDU_setData_local.fixSetS.bit.EVCU_State == 4) /*Charging*/
-                        {
-                            fc_contactor_operator();
-                        }
 
         }
         else
@@ -745,7 +737,14 @@ __interrupt void cpu_timer0_isr(void)
             PDU_setData_local.contactor_on = 1;
             PDU_setData_local.contactor_on_inverse = 2;
 #endif
+
             contactor_operator();
+            if (PDU_setData_local.fixSetS.bit.EVCU_State == 4) /*Charging*/
+                                    {
+                                        fc_contactor_operator();
+                                    }
+
+
 #ifdef MASTER
             slave_status = slave_controller();
             if (slave_status && PDU_setData_local.fixSetS.bit.charger_connected && charge_complete
