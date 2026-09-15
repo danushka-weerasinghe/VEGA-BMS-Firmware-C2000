@@ -42,7 +42,7 @@ Uint16 fail;
 
 //void (*ApplicationPtr) (void);  // Function Prototypes
 extern CAN_BufferMap canMap;
-extern Uint16 soc_count;
+//extern Uint16 soc_count;
 extern Uint8 save_chg_energy_flag;
 extern volatile Uint8 eeprom_save_done_flag;
 
@@ -739,6 +739,7 @@ __interrupt void cpu_timer0_isr(void)
 #endif
 
             contactor_operator();
+
             if (PDU_setData_local.fixSetS.bit.EVCU_State == 4) /*Charging*/
                                     {
                                         fc_contactor_operator();
@@ -2724,6 +2725,7 @@ void contactor_operator()
                 {
                     bms_opMode = contactor_closed;
                     con_fb_try_count = 0;
+                    LED3_TGL;
                 }
                 break;
 
@@ -2740,7 +2742,7 @@ Uint16 con_fb_try_count_fc = 0;
 void fc_contactor_operator()
 {
 
-    FC_CON_DRIVER_EN;
+
     //Check for Battery error
     if (bms_opMode == error)
     {
@@ -2754,7 +2756,7 @@ void fc_contactor_operator()
     //charge FCcon enable while checking for FCcon error
     else if (bms_fc_Mode == error_fc)
     {
-//        FC_CON_DRIVER_DIS;
+        FC_CON_DRIVER_DIS;
 
     }
     else if (bms_fc_Mode == not_initialized_fc)
@@ -2944,6 +2946,7 @@ void main_msp_config_loop()
                         {
                             //configured successfully and received the cell data correctly
                             config_finished_flag = 1;
+                            LED2_ON;
                         }
                         else if (received_data_buffer[4] == RESEND)
                         {
@@ -3071,7 +3074,7 @@ void hv_batterry_read(Uint8 *C_ic)
                     if (received_data_buffer[4] == REQUEST)
                     {
                         //configured successfully and received the cell data correctly
-                        //LED4_TGL;
+                        LED4_TGL;
                         seperateBMSdata(SPI_rec_packed_length, received_data_buffer);
                         BMS_data_sep_flag = 1;
                         if (all_data_requst_over_flag == 1)

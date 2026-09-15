@@ -122,6 +122,12 @@ void CONFIG_Gpio()
     GpioCtrlRegs.GPAPUD.bit.GPIO13 = 1; //Pull-up resistor disabled
     GpioDataRegs.GPADAT.bit.GPIO13 = 0; //Drive to 0
 
+    //6) LED2
+    GpioCtrlRegs.GPAMUX1.bit.GPIO14 = 0; //configure as GPIO
+    GpioCtrlRegs.GPADIR.bit.GPIO14 = 1; //configure as OUTPUT
+    GpioCtrlRegs.GPAPUD.bit.GPIO14 = 1; //Pull-up resistor disabled
+    GpioDataRegs.GPADAT.bit.GPIO14 = 0; //Drive to 0
+
     //7) LED3
     GpioCtrlRegs.GPAMUX2.bit.GPIO20 = 0; //configure as GPIO
     GpioCtrlRegs.GPADIR.bit.GPIO20 = 1; //configure as OUTPUT
