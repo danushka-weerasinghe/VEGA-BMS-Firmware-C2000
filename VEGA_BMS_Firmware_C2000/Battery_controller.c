@@ -42,7 +42,7 @@ Uint16 fail;
 
 //void (*ApplicationPtr) (void);  // Function Prototypes
 extern CAN_BufferMap canMap;
-extern Uint16 soc_count;
+//extern Uint16 soc_count;
 extern Uint8 save_chg_energy_flag;
 extern volatile Uint8 eeprom_save_done_flag;
 
