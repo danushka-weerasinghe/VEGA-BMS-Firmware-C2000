@@ -187,6 +187,7 @@ Uint8 config_finished_flag = 0;
 Uint8 Resend_request_flag = 0;
 enum bms_opMode_enum bms_opMode = not_initialized;
 enum trip_event_enum trip_cause = no_error;
+enum bms_fc_Mode_enum bms_fc_Mode = not_initialized_fc;
 enum humidity_sensor_error_enum SHT30_error = read_okay;
 Uint8 slave_status = 0; /* 0 = no slave, 1 = slave present, 2 = slave ok */
 Uint8 master_status = 0; /* 0 = no master, 1 = master prsent */
@@ -727,6 +728,8 @@ __interrupt void cpu_timer0_isr(void)
             PDU_setData_local.contactor_on = 1;
             PDU_setData_local.contactor_on_inverse = 2;
             contactor_operator_fire();
+
+
         }
         else
         {
@@ -734,7 +737,15 @@ __interrupt void cpu_timer0_isr(void)
             PDU_setData_local.contactor_on = 1;
             PDU_setData_local.contactor_on_inverse = 2;
 #endif
+
             contactor_operator();
+
+            if (PDU_setData_local.fixSetS.bit.EVCU_State == 4) /*Charging*/
+                                    {
+                                        fc_contactor_operator();
+                                    }
+
+
 #ifdef MASTER
             slave_status = slave_controller();
             if (slave_status && PDU_setData_local.fixSetS.bit.charger_connected && charge_complete
@@ -2052,9 +2063,9 @@ void analyze_rdata()
     {
         for (local_counter = 0; local_counter < CELLS_PER_IC; local_counter++)
         {
-            if ((local_counter == 11) && (local_counter_ic == 1))
+            if ((local_counter == 4) || (local_counter == 5) || (local_counter == 9) ||(local_counter == 10)|| (local_counter == 11))
             {
-//                local_counter++;
+                local_counter++;
             }
             else
             {
@@ -2714,6 +2725,7 @@ void contactor_operator()
                 {
                     bms_opMode = contactor_closed;
                     con_fb_try_count = 0;
+                    LED3_TGL;
                 }
                 break;
 
@@ -2723,6 +2735,69 @@ void contactor_operator()
         }
     }
     PDU_getData_local.op_mode = bms_opMode;
+}
+
+Uint16 con_fb_try_count_fc = 0;
+
+void fc_contactor_operator()
+{
+
+
+    //Check for Battery error
+    if (bms_opMode == error)
+    {
+        bms_fc_Mode = error_fc;
+    }
+//    else
+//    {
+//        bms_fc_Mode = not_initialized_fc;
+//    }
+
+    //charge FCcon enable while checking for FCcon error
+    else if (bms_fc_Mode == error_fc)
+    {
+        FC_CON_DRIVER_DIS;
+
+    }
+    else if (bms_fc_Mode == not_initialized_fc)
+    {
+        if (!FC_CON_FB)
+        {
+            bms_fc_Mode = initialized_fc;
+        }
+        else
+        {
+            bms_fc_Mode = error_fc;
+        //    PDU_getData_local.fixSetChrg.bit.fc_con_error = 1;
+        }
+    }
+    else if (((bms_fc_Mode == initialized_fc) || (bms_fc_Mode == contactor_closed_fc))
+            && (PDU_setData_local.fixSetS_EVCC.bit.fc_con_enble == 1))
+    {
+        FC_CON_DRIVER_EN;
+//        bms_fc_Mode = contactor_closed_fc;
+//        con_fb_try_count_fc = 0;
+//        PDU_getData_local.fixSetChrg.bit.fc_con_error = 0;
+        if(!FC_CON_FB)
+        {
+            if(con_fb_try_count_fc > 5)
+            {
+//                PDU_getData_local.fixSetChrg.bit.fc_con_error = 1;
+                bms_fc_Mode = error_fc;
+            }
+            else
+            {
+                con_fb_try_count_fc++;
+            }
+        }
+        else
+        {
+            bms_fc_Mode = contactor_closed_fc;
+            con_fb_try_count_fc = 0;
+//            PDU_getData_local.fixSetChrg.bit.fc_con_error = 0;
+        }
+    }
+//    PDU_getData_local.fixSetChrg.bit.fc_con_fb = FC_CON_FB;
 }
 
 /*
@@ -2871,6 +2946,7 @@ void main_msp_config_loop()
                         {
                             //configured successfully and received the cell data correctly
                             config_finished_flag = 1;
+                            LED2_ON;
                         }
                         else if (received_data_buffer[4] == RESEND)
                         {
@@ -2998,7 +3074,7 @@ void hv_batterry_read(Uint8 *C_ic)
                     if (received_data_buffer[4] == REQUEST)
                     {
                         //configured successfully and received the cell data correctly
-                        //LED4_TGL;
+                        LED4_TGL;
                         seperateBMSdata(SPI_rec_packed_length, received_data_buffer);
                         BMS_data_sep_flag = 1;
                         if (all_data_requst_over_flag == 1)

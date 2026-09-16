@@ -50,17 +50,17 @@
 #define CTRLR_BSY GpioDataRegs.GPACLEAR.bit.GPIO4 = 1
 
 #define LED1_ON GpioDataRegs.GPASET.bit.GPIO13 = 1 //LED
-//#define LED2_ON GpioDataRegs.GPASET.bit.GPIO14 = 1 //LED
+#define LED2_ON GpioDataRegs.GPASET.bit.GPIO14 = 1 //LED
 #define LED3_ON GpioDataRegs.GPASET.bit.GPIO20 = 1 //LED
 #define LED4_ON GpioDataRegs.GPASET.bit.GPIO21 = 1 //LED
 
 #define LED1_OFF GpioDataRegs.GPACLEAR.bit.GPIO13 = 1 //LED
-//#define LED2_OFF GpioDataRegs.GPACLEAR.bit.GPIO14 = 1 //LED
+#define LED2_OFF GpioDataRegs.GPACLEAR.bit.GPIO14 = 1 //LED
 #define LED3_OFF GpioDataRegs.GPACLEAR.bit.GPIO20 = 1 //LED
 #define LED4_OFF GpioDataRegs.GPACLEAR.bit.GPIO21 = 1 //LED
 
 #define LED1_TGL GpioDataRegs.GPATOGGLE.bit.GPIO13 = 1 //LED
-//#define LED2_TGL GpioDataRegs.GPATOGGLE.bit.GPIO14 = 1 //LED
+#define LED2_TGL GpioDataRegs.GPATOGGLE.bit.GPIO14 = 1 //LED
 #define LED3_TGL GpioDataRegs.GPATOGGLE.bit.GPIO20 = 1 //LED
 #define LED4_TGL GpioDataRegs.GPATOGGLE.bit.GPIO21 = 1 //LED
 
@@ -71,12 +71,15 @@
 
 #define EMG_FB GpioDataRegs.GPADAT.bit.GPIO9
 #define CON_FB GpioDataRegs.GPADAT.bit.GPIO12
+#define FC_CON_FB GpioDataRegs.GPBDAT.bit.GPIO44
 
 #define PRECHARGER_EN GpioDataRegs.GPBSET.bit.GPIO50 = 1
 #define CON_DRIVER_EN GpioDataRegs.GPBSET.bit.GPIO51 = 1
+#define FC_CON_DRIVER_EN GpioDataRegs.GPASET.bit.GPIO6 = 1
 
 #define PRECHARGER_DIS GpioDataRegs.GPBCLEAR.bit.GPIO50 = 1
 #define CON_DRIVER_DIS GpioDataRegs.GPBCLEAR.bit.GPIO51 = 1
+#define FC_CON_DRIVER_DIS GpioDataRegs.GPACLEAR.bit.GPIO6 = 1
 
 //#define EMG_INPUT GpioDataRegs.GPBDAT.bit.GPIO41
 
@@ -119,6 +122,12 @@ void CONFIG_Gpio()
     GpioCtrlRegs.GPAPUD.bit.GPIO13 = 1; //Pull-up resistor disabled
     GpioDataRegs.GPADAT.bit.GPIO13 = 0; //Drive to 0
 
+    //6) LED2
+    GpioCtrlRegs.GPAMUX1.bit.GPIO14 = 0; //configure as GPIO
+    GpioCtrlRegs.GPADIR.bit.GPIO14 = 1; //configure as OUTPUT
+    GpioCtrlRegs.GPAPUD.bit.GPIO14 = 1; //Pull-up resistor disabled
+    GpioDataRegs.GPADAT.bit.GPIO14 = 0; //Drive to 0
+
     //7) LED3
     GpioCtrlRegs.GPAMUX2.bit.GPIO20 = 0; //configure as GPIO
     GpioCtrlRegs.GPADIR.bit.GPIO20 = 1; //configure as OUTPUT
@@ -154,21 +163,33 @@ void CONFIG_Gpio()
     GpioCtrlRegs.GPBDIR.bit.GPIO51 = 1; //configure as OUTPUT
     GpioCtrlRegs.GPBPUD.bit.GPIO51 = 1; //Pull-up resistor disabled
     GpioDataRegs.GPBDAT.bit.GPIO51 = 0; //Drive to 0
+
+    //13) K5 - FC_contactor_drive
+    GpioCtrlRegs.GPBMUX1.bit.GPIO44 = 0; /*configure as GPIO*/
+    GpioCtrlRegs.GPBDIR.bit.GPIO44 = 0; /*configure as INPUT*/
+    GpioCtrlRegs.GPBPUD.bit.GPIO44 = 1; /*Pull-up resistor disabled*/
+    GpioDataRegs.GPBDAT.bit.GPIO44 = 0; /*Drive to 0*/
+
+    //14) K6 - FC_contactor_enable
+    GpioCtrlRegs.GPAMUX1.bit.GPIO6 = 0; /*configure as GPIO*/
+    GpioCtrlRegs.GPADIR.bit.GPIO6 = 1; /*configure as OUTPUT*/
+    GpioCtrlRegs.GPAPUD.bit.GPIO6 = 1; /*Pull-up resistor disabled*/
+    GpioDataRegs.GPADAT.bit.GPIO6 = 0; /*Drive to 0*/
     //------------------------------------------------------------//
-    //13) RTC interrupt
+    //15) RTC interrupt
     GpioCtrlRegs.GPAMUX1.bit.GPIO8 = 0; //configure as GPIO
     GpioCtrlRegs.GPADIR.bit.GPIO8 = 1; //configure as OUTPUT
     GpioCtrlRegs.GPAPUD.bit.GPIO8 = 1; //Pull-up resistor disabled
     GpioDataRegs.GPADAT.bit.GPIO8 = 0; //Drive to 0
 
-    //14) RTC Time stamp
+    //16) RTC Time stamp
     GpioCtrlRegs.GPAMUX1.bit.GPIO7 = 0; //configure as GPIO
     GpioCtrlRegs.GPADIR.bit.GPIO7 = 1; //configure as OUTPUT
     GpioCtrlRegs.GPAPUD.bit.GPIO7 = 1; //Pull-up resistor disabled
     GpioDataRegs.GPADAT.bit.GPIO7 = 0; //Drive to 0
     //------------------------------------------------------------//
 
-    //15) RS485 Transceiver send/receive
+    //17) RS485 Transceiver send/receive
     GpioCtrlRegs.GPBMUX1.bit.GPIO42 = 0; //configure as GPIO
     GpioCtrlRegs.GPBDIR.bit.GPIO42 = 1; //configure as OUTPUT
     GpioCtrlRegs.GPBPUD.bit.GPIO42 = 1; //Pull-up resistor disabled

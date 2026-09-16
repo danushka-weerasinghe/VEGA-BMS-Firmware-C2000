@@ -17,7 +17,7 @@
 // Capacity bounds
 #define MIN_NOMINAL_CAPACITY      10
 #define MAX_NOMINAL_CAPACITY      300
-#define DEFAULT_NOMINAL_CAPACITY  130
+#define DEFAULT_NOMINAL_CAPACITY  117
 
 
 // Current limits bounds (Scaled by 100)
