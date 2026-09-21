@@ -29,9 +29,134 @@
 #define MASTER
 //#define SLAVE
 
+// ---- Select ONE Battery Pack ----
+
+#define ETX_10_kWH                  //
+// #define ETX_7_kWH                //
+// #define BIKE_2_MODULE_TENPOWER     // Pre-Protoype Bike 01 -   10S 20 P
+// #define BIKE_3_MODULE_TENPOWER   // 3D printed Panel Bike -  7S 29 P
+// #define BIKE_3_MODULE_MOLICELL   // Witout Body Panel Bike - 7S 29 P
+// #define SMALL_CAR                // Small Car Battery pack
+// #define ATV_3_MODULE             // ATV New Model with      - 7S -29P
+
+
+
+#if defined(ETX_10_kWH)
+
+#define CELL_CHEM_LFP
+#define TOTAL_IC            2 //max 16
+#define AUX_PER_IC          6
+#define TEMP_PER_IC         3  //max 16
+#define CELLS_PER_IC        12 //max 16
+#define STAT_REG            4
+#define DATA_LOOP_COUNT_n   5
+#define SEND_DATA_FREQ      8 //(val/10) seconds
+//#define RS485_current_sensor
+//#define CAN_current_sensor
+/*Define chiller*/
+#define CAN_CHILLER
+//#define SCI_CHILLER
+
+#elif defined(BIKE_2_MODULE_TENPOWER)
+
+#define CELL_CHEM_NMC
+#define TOTAL_IC            2 //max 16
+#define AUX_PER_IC          6
+#define TEMP_PER_IC         3  //max 16
+#define CELLS_PER_IC        11 //max 16
+#define STAT_REG            4
+#define DATA_LOOP_COUNT_n   5
+#define SEND_DATA_FREQ      8 //(val/10) seconds
+//#define RS485_current_sensor
+//#define CAN_current_sensor
+/*Define chiller*/
+#define CAN_CHILLER
+//#define SCI_CHILLER
+
+#elif defined(ETX_7_kWH)
+
+#define CELL_CHEM_LFP
+#define TOTAL_IC            2 //max 16
+#define AUX_PER_IC          6
+#define TEMP_PER_IC         5  //max 16
+#define CELLS_PER_IC        12 //max 16
+#define STAT_REG            4
+#define DATA_LOOP_COUNT_n   5
+#define SEND_DATA_FREQ      8 //(val/10) seconds
+//#define RS485_current_sensor
+//#define CAN_current_sensor
 /*Define chiller*/
 //#define CAN_CHILLER
 //#define SCI_CHILLER
+
+#elif defined(BIKE_3_MODULE_TENPOWER)
+
+#define CELL_CHEM_NMC
+#define TOTAL_IC            3 //max 16
+#define AUX_PER_IC          6
+#define TEMP_PER_IC         3  //max 16
+#define CELLS_PER_IC        9 //max 16
+#define STAT_REG            4
+#define DATA_LOOP_COUNT_n   5
+#define SEND_DATA_FREQ      8 //(val/10) seconds
+//#define RS485_current_sensor
+//#define CAN_current_sensor
+/*Define chiller*/
+#define CAN_CHILLER
+//#define SCI_CHILLER
+
+#elif defined(BIKE_3_MODULE_MOLICELL)
+
+#define CELL_CHEM_NMC
+#define TOTAL_IC            3 //max 16
+#define AUX_PER_IC          6
+#define TEMP_PER_IC         3  //max 16
+#define CELLS_PER_IC        9 //max 16
+#define STAT_REG            4
+#define DATA_LOOP_COUNT_n   5
+#define SEND_DATA_FREQ      8 //(val/10) seconds
+//#define RS485_current_sensor
+//#define CAN_current_sensor
+/*Define chiller*/
+#define CAN_CHILLER
+//#define SCI_CHILLER
+
+#elif defined(SMALL_CAR)
+
+#define CELL_CHEM_LFP
+#define TOTAL_IC            8 //max 16
+#define AUX_PER_IC          6
+#define TEMP_PER_IC         3  //max 16
+#define CELLS_PER_IC        12 //max 16
+#define STAT_REG            4
+#define DATA_LOOP_COUNT_n   5
+#define SEND_DATA_FREQ      8 //(val/10) seconds
+//#define RS485_current_sensor
+//#define CAN_current_sensor
+/*Define chiller*/
+#define CAN_CHILLER
+//#define SCI_CHILLER
+
+#elif defined(ATV_3_MODULE)
+
+#define CELL_CHEM_NMC
+#define TOTAL_IC            3 //max 16
+#define AUX_PER_IC          6
+#define TEMP_PER_IC         3  //max 16
+#define CELLS_PER_IC        9 //max 16
+#define STAT_REG            4
+#define DATA_LOOP_COUNT_n   5
+#define SEND_DATA_FREQ      8 //(val/10) seconds
+//#define RS485_current_sensor
+//#define CAN_current_sensor
+/*Define chiller*/
+//#define CAN_CHILLER
+//#define SCI_CHILLER
+
+#else
+  #error "No battery pack selected."
+#endif
+
 
 /*Define update status*/
 //#define J_TAG_BOOTLOADING
@@ -166,19 +291,24 @@
 //#define DISCHARGE_CURRENT_THRESHOLD 15000
 //#define SC_CURRENT_THRESHOLD 19000
 
+#if defined (CELL_CHEM_NMC)
+
 #define COM_ERROR_COUNT_THRESHOLD 3
 #define HIGHEST_CELL_VOLTAGE_LIMIT 42000
 #define CHARGE_CELL_VOLTAGE_LIMIT 41800
 #define LOWEST_CELL_VOLTAGE_LIMIT 28000
 #define LOWEST_CELL_VOLTAGE_CUTOFF 25000
 
-/*
+#elif defined(CELL_CHEM_LFP)
+
 #define COM_ERROR_COUNT_THRESHOLD 3
 #define HIGHEST_CELL_VOLTAGE_LIMIT 36000
 #define CHARGE_CELL_VOLTAGE_LIMIT 35000
 #define LOWEST_CELL_VOLTAGE_LIMIT 28000
 #define LOWEST_CELL_VOLTAGE_CUTOFF 25000
-*/
+
+
+#endif
 
 #define HIGHEST_TEMPERATURE_LIMIT 51
 #define TEMPERATURE_CUTOFF 53

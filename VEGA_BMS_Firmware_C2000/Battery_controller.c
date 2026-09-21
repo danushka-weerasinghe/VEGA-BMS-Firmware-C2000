@@ -42,7 +42,7 @@ Uint16 fail;
 
 //void (*ApplicationPtr) (void);  // Function Prototypes
 extern CAN_BufferMap canMap;
-//extern Uint16 soc_count;
+extern Uint16 soc_count;
 extern Uint8 save_chg_energy_flag;
 extern volatile Uint8 eeprom_save_done_flag;
 
@@ -2063,7 +2063,21 @@ void analyze_rdata()
     {
         for (local_counter = 0; local_counter < CELLS_PER_IC; local_counter++)
         {
-            if ((local_counter == 4) || (local_counter == 5) || (local_counter == 9) ||(local_counter == 10)|| (local_counter == 11))
+#if defined (ETX_10_kWH)
+            if((local_counter == 4) || (local_counter == 5) || (local_counter == 9) ||(local_counter == 10)|| (local_counter == 11))
+#elif defined(ETX_7_kWH)
+            if(local_counter == 5)
+#elif defined(BIKE_2_MODULE_TENPOWER)
+             if(local_counter == 5)
+#elif defined(BIKE_3_MODULE_TENPOWER)
+              if(local_counter == 5)
+#elif defined(BIKE_3_MODULE_MOLICELL)
+              if(local_counter == 5)
+#elif defined(SMALL_CAR)
+              if(local_counter == 5)
+#elif defined(ATV_3_MODULE)
+              if(local_counter == 5)
+#endif
             {
                 local_counter++;
             }
