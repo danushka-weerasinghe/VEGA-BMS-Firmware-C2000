@@ -462,7 +462,6 @@ void Msp2_reset();
 Uint8 slave_controller(void);
 void timer_task_can();
 void contactor_operator();
-void fc_contactor_operator();
 void contactor_operator_fire();
 void time_out_request();
 void send_to_pc();
@@ -479,8 +478,7 @@ void sys_check();
 double adc_read_asd(Uint16 adc_addr);
 
 enum trip_event_enum{no_error=0,hi_v_error,hi_t_error,com_error,cc_threshold, dc_threshold, l_v_error,one_time_emg_evt};
-enum bms_opMode_enum{not_initialized = 0, initialized, contactor_closed, error, emergency_event, trip_event};
-enum bms_fc_Mode_enum{not_initialized_fc = 0, initialized_fc, contactor_closed_fc, error_fc};
+enum bms_opMode_enum{not_initialized = 0, initialized, contactor_closed, error, emergency_event, trip_event,fast_charging};
 enum chiller_comp_state_enum{off = 0, on, compressor_error};
 enum chiller_error_enum{no_fault = 0, over_current, running_ov, running_uv, standby_ov, standby_uv, comm_failure, speed_error};
 enum humidity_sensor_error_enum{read_okay = 0, data_read_error, humidity_error, temperature_error};

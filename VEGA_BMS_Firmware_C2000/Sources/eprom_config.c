@@ -45,14 +45,14 @@
 
 // Current limits bounds (Scaled by 100)
 #define DEFAULT_CHARGE_LIMIT      -15000  // -150 Amps
-#define DEFAULT_DISCHARGE_LIMIT   15000   // 150 Amps
-#define DEFAULT_SC_LIMIT          19000   // 190 Amps
+#define DEFAULT_DISCHARGE_LIMIT   10000   // 150 Amps
+#define DEFAULT_SC_LIMIT          11000   // 190 Amps
 
 #elif defined(BIKE_3_MODULE_TENPOWER)
 
 #define MIN_NOMINAL_CAPACITY      10
 #define MAX_NOMINAL_CAPACITY      300
-#define DEFAULT_NOMINAL_CAPACITY  117
+#define DEFAULT_NOMINAL_CAPACITY  110
 
 // Current limits bounds (Scaled by 100)
 #define DEFAULT_CHARGE_LIMIT      -15000  // -150 Amps
@@ -60,6 +60,15 @@
 #define DEFAULT_SC_LIMIT          19000   // 190 Amps
 
 #elif defined(BIKE_3_MODULE_MOLICELL)
+
+#define MIN_NOMINAL_CAPACITY      10
+#define MAX_NOMINAL_CAPACITY      300
+#define DEFAULT_NOMINAL_CAPACITY  110
+
+// Current limits bounds (Scaled by 100)
+#define DEFAULT_CHARGE_LIMIT      -15000  // -150 Amps
+#define DEFAULT_DISCHARGE_LIMIT   15000   // 150 Amps
+#define DEFAULT_SC_LIMIT          19000   // 190 Amps
 
 #endif
 

@@ -12,8 +12,8 @@
 	<createSlaveProjects value=""/>
 	<templateProperties value="id=com.ti.common.project.core.emptyProjectWithMainTemplate"/>
 	<filesToOpen value="main.c"/>
-	<isTargetManual value="true"/>
-	<connection value="common/targetdb/connections/TIXDS100v2_Connection.xml"/>
+	<isTargetManual value="false"/>
+	<connection value="common/targetdb/connections/TIXDS100usb_Connection.xml"/>
 	<origin value="D:/VEGA/Git Hub/VEGA-BMS-Firmware-C2000/VEGA_BMS_Firmware_C2000"/>
 	<sourceLookupPath value=""/>
 </projectOptions>

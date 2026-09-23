@@ -187,7 +187,6 @@ Uint8 config_finished_flag = 0;
 Uint8 Resend_request_flag = 0;
 enum bms_opMode_enum bms_opMode = not_initialized;
 enum trip_event_enum trip_cause = no_error;
-enum bms_fc_Mode_enum bms_fc_Mode = not_initialized_fc;
 enum humidity_sensor_error_enum SHT30_error = read_okay;
 Uint8 slave_status = 0; /* 0 = no slave, 1 = slave present, 2 = slave ok */
 Uint8 master_status = 0; /* 0 = no master, 1 = master prsent */
@@ -739,11 +738,6 @@ __interrupt void cpu_timer0_isr(void)
 #endif
 
             contactor_operator();
-
-            if (PDU_setData_local.fixSetS.bit.EVCU_State == 4) /*Charging*/
-                                    {
-                                        fc_contactor_operator();
-                                    }
 
 
 #ifdef MASTER
@@ -2358,6 +2352,9 @@ void timer_task_can()
     if (loop_counter_x % 10 == 0)
     {
         broadcast_eeprom_data_over_can();
+
+        LED3_TGL;
+
     }
 
 }
@@ -2495,6 +2492,8 @@ Uint16 emg_delay = 0;
 Uint16 precharge_timer = 0;
 Uint16 n_tries = 0;
 Uint16 con_fb_try_count = 0;
+Uint16 con_fb_try_count_fc = 0;
+Uint16 con_delay_count_fc = 0 ;
 
 void contactor_operator()
 {
@@ -2674,7 +2673,7 @@ void contactor_operator()
             PDU_getData_local.fixSetG.bit.contactor_error = 1;
         }
     }
-    else if (((bms_opMode == initialized) || (bms_opMode == contactor_closed)) && (PDU_setData_local.contactor_on == 1)
+    else if (((bms_opMode == initialized) || (bms_opMode == contactor_closed) || (bms_opMode == fast_charging) ) && (PDU_setData_local.contactor_on == 1)
             && (PDU_setData_local.contactor_on_inverse == 2))
     {
         switch (contactor_state)
@@ -2721,25 +2720,70 @@ void contactor_operator()
                 break;
 
             case 3:
-                CON_DRIVER_EN;
-                PRECHARGER_DIS;
-                if(!CON_FB)
+
+                if (PDU_setData_local.fixSetS_EVCC.bit.fc_con_enble == 1)
                 {
-                    if(con_fb_try_count > 5)
-                    {
-                        PDU_getData_local.fixSetG.bit.contactor_error = 1;
-                        bms_opMode = error;
-                    }
-                    else
-                    {
-                        con_fb_try_count++;
-                    }
+                    contactor_state++;
                 }
                 else
                 {
-                    bms_opMode = contactor_closed;
-                    con_fb_try_count = 0;
-                    LED3_TGL;
+
+                    CON_DRIVER_EN;
+                    PRECHARGER_DIS;
+                    if(!CON_FB)
+                    {
+                        if(con_fb_try_count > 5)
+                        {
+                            PDU_getData_local.fixSetG.bit.contactor_error = 1;
+                            bms_opMode = error;
+                        }
+                        else
+                        {
+                            con_fb_try_count++;
+                        }
+                    }
+                    else
+                    {
+                        bms_opMode = contactor_closed;
+                        con_fb_try_count = 0;
+                        LED3_TGL;
+                    }
+                }
+                break;
+
+            case 4:
+
+                /* Disable pre-charge circuit */
+                CON_DRIVER_EN;
+                PRECHARGER_DIS;
+
+                if (con_delay_count_fc < 10)               /* saturate, don't free-run */
+                {
+                    con_delay_count_fc++;
+                }
+
+                if (con_delay_count_fc == 10)
+                {
+                    FC_CON_DRIVER_EN;
+
+                    if (!CON_FB || !FC_CON_FB)             /* only check feedback after commanding ON */
+                    {
+                        if (con_fb_try_count_fc > 5)       /* same threshold as original: fires on 7th check */
+                        {
+                            PDU_getData_local.fixSetChrg.bit.fc_contactor = 0;
+                            bms_opMode = error;
+                        }
+                        else
+                        {
+                            con_fb_try_count_fc++;
+                        }
+                    }
+                    else
+                    {
+                        bms_opMode = fast_charging;
+                        con_fb_try_count_fc = 0;
+                        PDU_getData_local.fixSetChrg.bit.fc_contactor = 1;
+                    }
                 }
                 break;
 
@@ -2749,70 +2793,12 @@ void contactor_operator()
         }
     }
     PDU_getData_local.op_mode = bms_opMode;
+      // after fc contractor closed
 }
 
-Uint16 con_fb_try_count_fc = 0;
-
-void fc_contactor_operator()
-{
 
 
-    //Check for Battery error
-    if (bms_opMode == error)
-    {
-        bms_fc_Mode = error_fc;
-    }
-//    else
-//    {
-//        bms_fc_Mode = not_initialized_fc;
-//    }
 
-    //charge FCcon enable while checking for FCcon error
-    else if (bms_fc_Mode == error_fc)
-    {
-        FC_CON_DRIVER_DIS;
-
-    }
-    else if (bms_fc_Mode == not_initialized_fc)
-    {
-        if (!FC_CON_FB)
-        {
-            bms_fc_Mode = initialized_fc;
-        }
-        else
-        {
-            bms_fc_Mode = error_fc;
-        //    PDU_getData_local.fixSetChrg.bit.fc_con_error = 1;
-        }
-    }
-    else if (((bms_fc_Mode == initialized_fc) || (bms_fc_Mode == contactor_closed_fc))
-            && (PDU_setData_local.fixSetS_EVCC.bit.fc_con_enble == 1))
-    {
-        FC_CON_DRIVER_EN;
-//        bms_fc_Mode = contactor_closed_fc;
-//        con_fb_try_count_fc = 0;
-//        PDU_getData_local.fixSetChrg.bit.fc_con_error = 0;
-        if(!FC_CON_FB)
-        {
-            if(con_fb_try_count_fc > 5)
-            {
-//                PDU_getData_local.fixSetChrg.bit.fc_con_error = 1;
-                bms_fc_Mode = error_fc;
-            }
-            else
-            {
-                con_fb_try_count_fc++;
-            }
-        }
-        else
-        {
-            bms_fc_Mode = contactor_closed_fc;
-            con_fb_try_count_fc = 0;
-//            PDU_getData_local.fixSetChrg.bit.fc_con_error = 0;
-        }
-    }
-//    PDU_getData_local.fixSetChrg.bit.fc_con_fb = FC_CON_FB;
-}
 
 /*
  * Function Name    : time_out_request
