@@ -17,7 +17,7 @@
 #define getTempOffset() (*(int (*)(void))0x3D7E85)()
 
 /*Define current sensor*/
-#define shunt_CS
+//#define shunt_CS
 //#define hall_CS
 //#define recovery_CS
 
@@ -31,9 +31,9 @@
 
 // ---- Select ONE Battery Pack ----
 
-#define ETX_10_kWH                  //
-// #define ETX_7_kWH                //
-// #define BIKE_2_MODULE_TENPOWER     // Pre-Protoype Bike 01 -   10S 20 P
+//#define ETX_10_kWH                  // ETX with REPT cells 1P 23S
+// #define ETX_7_kWH                // ETX 1st Version with EVE cells  1P 22S
+ #define BIKE_2_MODULE_TENPOWER     // Pre-Protoype Bike 01 -   10S 20 P
 // #define BIKE_3_MODULE_TENPOWER   // 3D printed Panel Bike -  7S 29 P
 // #define BIKE_3_MODULE_MOLICELL   // Witout Body Panel Bike - 7S 29 P
 // #define SMALL_CAR                // Small Car Battery pack
@@ -44,117 +44,118 @@
 #if defined(ETX_10_kWH)
 
 #define CELL_CHEM_LFP
+#define CAN_BAUD_RATE_KBPS  250
 #define TOTAL_IC            2 //max 16
 #define AUX_PER_IC          6
 #define TEMP_PER_IC         3  //max 16
-#define CELLS_PER_IC        12 //max 16
+#define CELLS_PER_IC        12 //max 16 - Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,1) && (1,1,1,1,1,1,1,1,1,1,1,0)
 #define STAT_REG            4
 #define DATA_LOOP_COUNT_n   5
 #define SEND_DATA_FREQ      8 //(val/10) seconds
-//#define RS485_current_sensor
+#define shunt_CS
 //#define CAN_current_sensor
-/*Define chiller*/
+//#define recovery_CS
 #define CAN_CHILLER
 //#define SCI_CHILLER
+#define CAN_PUMP
+//#define PWM_PUMP
 
 #elif defined(BIKE_2_MODULE_TENPOWER)
 
+// Cell Arrangment 10S 20P - Ten Power Cells - 2 Module per pack
+
 #define CELL_CHEM_NMC
+#define CAN_BAUD_RATE_KBPS  500
 #define TOTAL_IC            2 //max 16
 #define AUX_PER_IC          6
 #define TEMP_PER_IC         3  //max 16
-#define CELLS_PER_IC        11 //max 16
+#define CELLS_PER_IC        11 //max 16 - Cell Arrangement - (1,1,1,1,1,0,1,1,1,1,1,0)
 #define STAT_REG            4
 #define DATA_LOOP_COUNT_n   5
 #define SEND_DATA_FREQ      8 //(val/10) seconds
-//#define RS485_current_sensor
-//#define CAN_current_sensor
-/*Define chiller*/
-#define CAN_CHILLER
-//#define SCI_CHILLER
+#define shunt_CS
+//#define recovery_CS
+
+
 
 #elif defined(ETX_7_kWH)
 
+// Cell Arrangment 22S 1P - EVE Cells - 11 cell Per each IC
+
 #define CELL_CHEM_LFP
+#define CAN_BAUD_RATE_KBPS  250
 #define TOTAL_IC            2 //max 16
 #define AUX_PER_IC          6
 #define TEMP_PER_IC         5  //max 16
-#define CELLS_PER_IC        12 //max 16
+#define CELLS_PER_IC        11 //max 16 - Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,0)
 #define STAT_REG            4
 #define DATA_LOOP_COUNT_n   5
 #define SEND_DATA_FREQ      8 //(val/10) seconds
-//#define RS485_current_sensor
-//#define CAN_current_sensor
-/*Define chiller*/
+#define shunt_CS
+//#define recovery_CS
 //#define CAN_CHILLER
 //#define SCI_CHILLER
 
 #elif defined(BIKE_3_MODULE_TENPOWER)
 
+// Cell Arrangment 7S 29P - Ten Power - 3 Module per pack
+
 #define CELL_CHEM_NMC
+#define CAN_BAUD_RATE_KBPS  250
 #define TOTAL_IC            3 //max 16
 #define AUX_PER_IC          6
 #define TEMP_PER_IC         3  //max 16
-#define CELLS_PER_IC        9 //max 16
+#define CELLS_PER_IC        9 //max 16 Cell Arrangement - (1,1,1,1,0,0,1,1,1,0,0,0)
 #define STAT_REG            4
 #define DATA_LOOP_COUNT_n   5
 #define SEND_DATA_FREQ      8 //(val/10) seconds
+#define shunt_CS
 //#define RS485_current_sensor
-//#define CAN_current_sensor
-/*Define chiller*/
-#define CAN_CHILLER
-//#define SCI_CHILLER
 
 #elif defined(BIKE_3_MODULE_MOLICELL)
 
+// Cell Arrangment 7S 29P - Ten Power - 3 Module per pack
+
 #define CELL_CHEM_NMC
+#define CAN_BAUD_RATE_KBPS  250
 #define TOTAL_IC            3 //max 16
 #define AUX_PER_IC          6
 #define TEMP_PER_IC         3  //max 16
-#define CELLS_PER_IC        9 //max 16
+#define CELLS_PER_IC        9 //max 16  Cell Arrangement - (1,1,1,1,0,0,1,1,1,0,0,0)
 #define STAT_REG            4
 #define DATA_LOOP_COUNT_n   5
 #define SEND_DATA_FREQ      8 //(val/10) seconds
-//#define RS485_current_sensor
-//#define CAN_current_sensor
-/*Define chiller*/
-#define CAN_CHILLER
-//#define SCI_CHILLER
+#define shunt_CS
+//#define recovery_CS
 
 #elif defined(SMALL_CAR)
 
 #define CELL_CHEM_LFP
+#define CAN_BAUD_RATE_KBPS  500
 #define TOTAL_IC            8 //max 16
 #define AUX_PER_IC          6
 #define TEMP_PER_IC         3  //max 16
-#define CELLS_PER_IC        12 //max 16
+#define CELLS_PER_IC        12 //max 16 Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,1)
 #define STAT_REG            4
 #define DATA_LOOP_COUNT_n   5
 #define SEND_DATA_FREQ      8 //(val/10) seconds
-//#define RS485_current_sensor
-//#define CAN_current_sensor
+#define CAN_current_sensor
 /*Define chiller*/
-#define CAN_CHILLER
-//#define SCI_CHILLER
 
 #elif defined(ATV_3_MODULE)
 
 #define CELL_CHEM_NMC
+#define CAN_BAUD_RATE_KBPS  250
 #define TOTAL_IC            3 //max 16
 #define AUX_PER_IC          6
 #define TEMP_PER_IC         3  //max 16
-#define CELLS_PER_IC        9 //max 16
+#define CELLS_PER_IC        10 //max 16 Cell Arrangement - (1,1,1,1,1,0,1,1,1,1,1,0)
 #define STAT_REG            4
 #define DATA_LOOP_COUNT_n   5
 #define SEND_DATA_FREQ      8 //(val/10) seconds
-//#define RS485_current_sensor
-//#define CAN_current_sensor
-/*Define chiller*/
-//#define CAN_CHILLER
-//#define SCI_CHILLER
+#define shunt_CS
+//#define recovery_CS
 
-#else
-  #error "No battery pack selected."
 #endif
 
 
@@ -195,16 +196,6 @@
 #define run
 
 //#define AUXILARY_PACK ACTIVE
-
-#define TOTAL_IC 3 //max 16
-#define AUX_PER_IC 6
-#define TEMP_PER_IC 3  //max 16
-#define CELLS_PER_IC 9 //max 16
-#define STAT_REG 4
-#define DATA_LOOP_COUNT_n 5
-#define SEND_DATA_FREQ 8 //(val/10) seconds
-//#define RS485_current_sensor
-//#define CAN_current_sensor
 
 /*
  * AUX data
@@ -287,6 +278,7 @@
 #define CHARGE_CURRENT_THRESHOLD -12000
 #define DISCHARGE_CURRENT_THRESHOLD 20000
 #endif
+
 //#define CHARGE_CURRENT_THRESHOLD -15000
 //#define DISCHARGE_CURRENT_THRESHOLD 15000
 //#define SC_CURRENT_THRESHOLD 19000

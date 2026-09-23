@@ -145,3 +145,33 @@ ecap1_isr(void)
     //
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP4;
 }
+
+struct pumpTx pump_cntrl_cmd;
+
+void pumpData_write(Uint16* pump_data_write, enum pump_state pump_status)
+{
+    pump_cntrl_cmd.pump_power = pump_status;
+    pump_cntrl_cmd.target_duty.all = 150;//originally 1000
+
+    pump_data_write[0] = pump_cntrl_cmd.target_duty.byte.DUTY_BYTE1;
+    pump_data_write[1] = pump_cntrl_cmd.target_duty.byte.DUTY_BYTE2;
+    pump_data_write[2] = pump_cntrl_cmd.pump_power;
+    pump_data_write[3] = 0;
+    pump_data_write[4] = 0;
+    pump_data_write[5] = 0;
+    pump_data_write[6] = 0;
+    pump_data_write[7] = 0;
+}
+
+struct pumpRx pump_debug_cmd;
+
+void pumpData_read(Uint16* pump_data_read)
+{
+    pump_debug_cmd.target_speed_fb = pump_data_read[0];
+    pump_debug_cmd.target_speed_fb |= pump_data_read[1] << 8;
+    pump_debug_cmd.pump_power_fb = pump_data_read[2];
+    pump_debug_cmd.pump_temp = pump_data_read[3];
+    pump_debug_cmd.bus_v = pump_data_read[4];
+    pump_debug_cmd.pump_current = pump_data_read[5];
+    pump_debug_cmd.pump_error_code.all = pump_data_read[6];
+}

@@ -11,7 +11,7 @@
 
 #include "F2806x_Device.h"     // F2806x Headerfile Include File
 #include "F2806x_Examples.h"   // F2806x Examples Include File
-
+#include "main_data.h"
 //---------------------------------------------------------------------------
 // InitECan:
 //---------------------------------------------------------------------------
@@ -118,7 +118,13 @@ struct ECAN_REGS ECanaShadow;
     /* The following block is for 80 MHz SYSCLKOUT. (40 MHz CAN module clock Bit rate = 1 Mbps
        See Note at end of file. */
 
+#if (CAN_BAUD_RATE_KBPS == 250)
     ECanaShadow.CANBTC.bit.BRPREG = 9; //9 = 250kbps, 4 = 500kbps
+
+#elif (CAN_BAUD_RATE_KBPS == 500)
+    ECanaShadow.CANBTC.bit.BRPREG = 4; //9 = 250kbps, 4 = 500kbps
+#endif
+
     ECanaShadow.CANBTC.bit.TSEG2REG = 2;
     ECanaShadow.CANBTC.bit.TSEG1REG = 13;
 

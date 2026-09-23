@@ -2064,22 +2064,22 @@ void analyze_rdata()
         for (local_counter = 0; local_counter < CELLS_PER_IC; local_counter++)
         {
 #if defined (ETX_10_kWH)
-            if((local_counter == 4) || (local_counter == 5) || (local_counter == 9) ||(local_counter == 10)|| (local_counter == 11))
+            if((local_counter == 11) && (local_counter_ic == 1))
 #elif defined(ETX_7_kWH)
             if(local_counter == 5)
 #elif defined(BIKE_2_MODULE_TENPOWER)
              if(local_counter == 5)
 #elif defined(BIKE_3_MODULE_TENPOWER)
-              if(local_counter == 5)
+             if((local_counter > 3) && (local_counter < 6))
 #elif defined(BIKE_3_MODULE_MOLICELL)
-              if(local_counter == 5)
+             if((local_counter > 3) && (local_counter < 6))
 #elif defined(SMALL_CAR)
               if(local_counter == 5)
 #elif defined(ATV_3_MODULE)
-              if(local_counter == 5)
+              if((local_counter > 3) && (local_counter < 6))
 #endif
             {
-                local_counter++;
+//                local_counter++;
             }
             else
             {
@@ -3439,11 +3439,18 @@ void chillerCtrl(uint16_t highestT)
 #endif
         PDU_getData_local.fixSetChrg.bit.chiller_enable = 1;
         chiller_status = 1;
+
+#if defined(PWM_PUMP)
         if (!pump_speed)
         {
             pump_speed = 60;
             InitEPwmTimer(pump_speed);
         }
+#elif defined(CAN_PUMP)
+        pumpData_write(canMap.msg[CAN_OBJ_24].sendData, ON);
+        CAN_sendMessage(CAN_OBJ_24, NOMINAL_DLC, canMap.msg[CAN_OBJ_24].sendData);
+#endif
+
     }
     else if (highestT < 33)
     {
@@ -3451,6 +3458,12 @@ void chillerCtrl(uint16_t highestT)
         chiller_status = 0;
         pump_speed = 0;
         InitEPwmTimer(pump_speed);
+
+#if defined(CAN_PUMP)
+        pumpData_write(canMap.msg[CAN_OBJ_24].sendData, OFF);
+        CAN_sendMessage(CAN_OBJ_24, NOMINAL_DLC, canMap.msg[CAN_OBJ_24].sendData);
+#endif
+
     }
     else if (chiller_status)
     {
@@ -3460,7 +3473,10 @@ void chillerCtrl(uint16_t highestT)
         chillerData_write(canMap.msg[CAN_OBJ_20].sendData);
         CAN_sendMessage(CAN_OBJ_20, NOMINAL_DLC, canMap.msg[CAN_OBJ_20].sendData);
 #endif
-        CAN_sendMessage(CAN_OBJ_20, NOMINAL_DLC, canMap.msg[CAN_OBJ_20].sendData);
+#if defined(CAN_PUMP)
+        pumpData_write(canMap.msg[CAN_OBJ_24].sendData, ON);
+        CAN_sendMessage(CAN_OBJ_24, NOMINAL_DLC, canMap.msg[CAN_OBJ_24].sendData);
+#endif
         PDU_getData_local.fixSetChrg.bit.chiller_enable = 1;
         chiller_status = 1;
     }
