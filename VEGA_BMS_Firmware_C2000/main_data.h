@@ -52,6 +52,7 @@
 #define STAT_REG            4
 #define DATA_LOOP_COUNT_n   5
 #define SEND_DATA_FREQ      8 //(val/10) seconds
+#define FC_CONTACTOR        1 // Board HAS fast-charge contactor hardware
 #define shunt_CS
 //#define CAN_current_sensor
 //#define recovery_CS
@@ -73,6 +74,7 @@
 #define STAT_REG            4
 #define DATA_LOOP_COUNT_n   5
 #define SEND_DATA_FREQ      8 //(val/10) seconds
+#define FC_CONTACTOR        0 // Board HAS fast-charge contactor hardware
 #define shunt_CS
 //#define recovery_CS
 
@@ -91,6 +93,7 @@
 #define STAT_REG            4
 #define DATA_LOOP_COUNT_n   5
 #define SEND_DATA_FREQ      8 //(val/10) seconds
+#define FC_CONTACTOR        0 // Board HAS fast-charge contactor hardware
 #define shunt_CS
 //#define recovery_CS
 //#define CAN_CHILLER
@@ -109,6 +112,7 @@
 #define STAT_REG            4
 #define DATA_LOOP_COUNT_n   5
 #define SEND_DATA_FREQ      8 //(val/10) seconds
+#define FC_CONTACTOR        0 // Board HAS fast-charge contactor hardware
 #define shunt_CS
 //#define RS485_current_sensor
 
@@ -125,6 +129,7 @@
 #define STAT_REG            4
 #define DATA_LOOP_COUNT_n   5
 #define SEND_DATA_FREQ      8 //(val/10) seconds
+#define FC_CONTACTOR        0 // Board HAS fast-charge contactor hardware
 #define shunt_CS
 //#define recovery_CS
 
@@ -139,6 +144,7 @@
 #define STAT_REG            4
 #define DATA_LOOP_COUNT_n   5
 #define SEND_DATA_FREQ      8 //(val/10) seconds
+#define FC_CONTACTOR        1 // Board HAS fast-charge contactor hardware
 #define CAN_current_sensor
 /*Define chiller*/
 
@@ -153,6 +159,7 @@
 #define STAT_REG            4
 #define DATA_LOOP_COUNT_n   5
 #define SEND_DATA_FREQ      8 //(val/10) seconds
+#define FC_CONTACTOR        1 // Board HAS fast-charge contactor hardware
 #define shunt_CS
 //#define recovery_CS
 

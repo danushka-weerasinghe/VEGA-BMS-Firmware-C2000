@@ -454,7 +454,9 @@ void main(void)
                 {
                     charge_ctrl(Controller.highest_cell_volt, Current_value, Controller.SOC_value);
                     PDU_getData_local.charged_energy += calculate_charged_energy(Controller.total_pack_voltage);
+
                     cell_balancing_enable = 1;
+
                     charge_state = PDU_getData_local.fixSetChrg.bit.charge_complete_flag;
                 }
                 else
@@ -2721,7 +2723,8 @@ void contactor_operator()
 
             case 3:
 
-                if (PDU_setData_local.fixSetS_EVCC.bit.fc_con_enble == 1)
+
+                if (PDU_setData_local.fixSetS_EVCC.bit.fc_con_enble == 1 && FC_CONTACTOR == 1)
                 {
                     contactor_state++;
                 }
