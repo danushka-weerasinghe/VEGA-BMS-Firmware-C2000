@@ -508,7 +508,7 @@ void charge_ctrl(unsigned int highest_cell_v, int16 charge_current, float soc)
     (void)chargeComp_slave;
 
     if ((!PDU_getData_local.fixSetChrg.bit.charging) && (soc > 99)
-            && (!PDU_getData_local.fixSetChrg.bit.charge_complete_flag) && (highest_cell_v > 34000)) /*Initial SOC check to allow charging*/
+            && (!PDU_getData_local.fixSetChrg.bit.charge_complete_flag) && (highest_cell_v > CHARGE_COMPLETE_SET_VOLTAGE)) /*Initial SOC check to allow charging*/
     {
         PDU_getData_local.fixSetChrg.bit.charge_complete_flag = 1;
     }
