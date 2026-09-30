@@ -193,6 +193,7 @@ Uint8 master_status = 0; /* 0 = no master, 1 = master prsent */
 Uint8 soc_soh_flag = 0;
 uint16_t contactor_init_flag = 0;
 Uint8 charge_state = 2; /*0 = Charging not complete, 1 = charge complete, 2 = not initialized*/
+Uint16 SOC_estimation_error_delay = 0; // SOC estimation error delaying for sudden acceleration
 
 unsigned char SPI_receiver_state = 0;
 unsigned char SPI_rec_error = 0;
@@ -456,6 +457,7 @@ void main(void)
                     PDU_getData_local.charged_energy += calculate_charged_energy(Controller.total_pack_voltage);
                     cell_balancing_enable = 1;
                     charge_state = PDU_getData_local.fixSetChrg.bit.charge_complete_flag;
+                    PDU_getData_local.fixSetG.bit.soc_estimation_error = 0;
                 }
                 else
                 {
@@ -463,6 +465,20 @@ void main(void)
                     PDU_getData_local.fixSetChrg.all = 0;
                     charge_complete = 0;
                     reset_charge_session();
+                    // SOC Estimation error compare with voltage; if the min cell voltage is less than 3.15 and SOC is above 20%
+                    if (Controller.lowest_cell_volt < 31500
+                            && Controller.SOC_value > 20
+                            && !PDU_getData_local.fixSetG.bit.soc_estimation_error
+                            && SOC_estimation_error_delay > 100)
+                    {
+                        PDU_getData_local.fixSetG.bit.soc_estimation_error = 1;
+                        SOC_estimation_error_delay = 0;
+                    }
+                    else
+                    {
+                        SOC_estimation_error_delay++;
+
+                    }
                 }
 
                 temperature = Mcu_Temp();
