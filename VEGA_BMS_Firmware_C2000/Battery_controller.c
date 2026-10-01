@@ -455,7 +455,7 @@ void main(void)
                     charge_ctrl(Controller.highest_cell_volt, Current_value, Controller.SOC_value);
                     PDU_getData_local.charged_energy += calculate_charged_energy(Controller.total_pack_voltage);
 
-                    cell_balancing_enable = 1;
+                    cell_balancing_enable = BALANCING_ENABLE;
 
                     charge_state = PDU_getData_local.fixSetChrg.bit.charge_complete_flag;
                 }
@@ -2760,7 +2760,7 @@ void contactor_operator()
                 CON_DRIVER_EN;
                 PRECHARGER_DIS;
 
-                if (con_delay_count_fc < 10)               /* saturate, don't free-run */
+                if (con_delay_count_fc < 10)
                 {
                     con_delay_count_fc++;
                 }
@@ -3356,24 +3356,69 @@ void contactor_operator_fire()
                 break;
 
             case 3:
-                CON_DRIVER_EN;
-                PRECHARGER_DIS;
-                if(!CON_FB)
+
+                if (PDU_setData_local.fixSetS_EVCC.bit.fc_con_enble == 1 && FC_CONTACTOR == 1)
                 {
-                    if(con_fb_try_count_fire > 5)
-                    {
-                        PDU_getData_local.fixSetG.bit.contactor_error = 1;
-                        bms_opMode = error;
-                    }
-                    else
-                    {
-                        con_fb_try_count_fire++;
-                    }
+                    contactor_state++;
                 }
                 else
                 {
-                    bms_opMode = contactor_closed;
-                    con_fb_try_count_fire = 0;
+
+                    CON_DRIVER_EN;
+                    PRECHARGER_DIS;
+                    if(!CON_FB)
+                    {
+                        if(con_fb_try_count > 5)
+                        {
+                            PDU_getData_local.fixSetG.bit.contactor_error = 1;
+                            bms_opMode = error;
+                        }
+                        else
+                        {
+                            con_fb_try_count++;
+                        }
+                    }
+                    else
+                    {
+                        bms_opMode = contactor_closed;
+                        con_fb_try_count = 0;
+                        LED3_TGL;
+                    }
+                }
+
+            case 4:
+
+                /* Disable pre-charge circuit */
+                CON_DRIVER_EN;
+                PRECHARGER_DIS;
+
+                if (con_delay_count_fc < 10)
+                {
+                    con_delay_count_fc++;
+                }
+
+                if (con_delay_count_fc == 10)
+                {
+                    FC_CON_DRIVER_EN;
+
+                    if (!CON_FB || !FC_CON_FB)             /* only check feedback after commanding ON */
+                    {
+                        if (con_fb_try_count_fc > 5)       /* same threshold as original: fires on 7th check */
+                        {
+                            PDU_getData_local.fixSetChrg.bit.fc_contactor = 0;
+                            bms_opMode = error;
+                        }
+                        else
+                        {
+                            con_fb_try_count_fc++;
+                        }
+                    }
+                    else
+                    {
+                        bms_opMode = fast_charging;
+                        con_fb_try_count_fc = 0;
+                        PDU_getData_local.fixSetChrg.bit.fc_contactor = 1;
+                    }
                 }
                 break;
 

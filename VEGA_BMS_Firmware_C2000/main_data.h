@@ -44,15 +44,16 @@
 #if defined(ETX_10_kWH)
 
 #define CELL_CHEM_LFP
-#define CAN_BAUD_RATE_KBPS  250
-#define TOTAL_IC            2 //max 16
-#define AUX_PER_IC          6
-#define TEMP_PER_IC         3  //max 16
-#define CELLS_PER_IC        12 //max 16 - Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,1) && (1,1,1,1,1,1,1,1,1,1,1,0)
-#define STAT_REG            4
-#define DATA_LOOP_COUNT_n   5
-#define SEND_DATA_FREQ      8 //(val/10) seconds
-#define FC_CONTACTOR        1 // Board HAS fast-charge contactor hardware
+#define CAN_BAUD_RATE_KBPS      250
+#define TOTAL_IC                2 //max 16
+#define AUX_PER_IC              6
+#define TEMP_PER_IC             3  //max 16
+#define CELLS_PER_IC            12 //max 16 - Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,1) && (1,1,1,1,1,1,1,1,1,1,1,0)
+#define STAT_REG                4
+#define DATA_LOOP_COUNT_n       5
+#define SEND_DATA_FREQ          8 //(val/10) seconds
+#define FC_CONTACTOR            1 // Board HAS fast-charge contactor hardware
+#define BALANCING_ENABLE        0
 #define shunt_CS
 //#define CAN_current_sensor
 //#define recovery_CS
@@ -66,15 +67,16 @@
 // Cell Arrangment 10S 20P - Ten Power Cells - 2 Module per pack
 
 #define CELL_CHEM_NMC
-#define CAN_BAUD_RATE_KBPS  500
-#define TOTAL_IC            2 //max 16
-#define AUX_PER_IC          6
-#define TEMP_PER_IC         3  //max 16
-#define CELLS_PER_IC        11 //max 16 - Cell Arrangement - (1,1,1,1,1,0,1,1,1,1,1,0)
-#define STAT_REG            4
-#define DATA_LOOP_COUNT_n   5
-#define SEND_DATA_FREQ      8 //(val/10) seconds
-#define FC_CONTACTOR        0 // Board HAS fast-charge contactor hardware
+#define CAN_BAUD_RATE_KBPS      500
+#define TOTAL_IC                2 //max 16
+#define AUX_PER_IC              6
+#define TEMP_PER_IC             3  //max 16
+#define CELLS_PER_IC            11 //max 16 - Cell Arrangement - (1,1,1,1,1,0,1,1,1,1,1,0)
+#define STAT_REG                4
+#define DATA_LOOP_COUNT_n       5
+#define SEND_DATA_FREQ          8 //(val/10) seconds
+#define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
+#define BALANCING_ENABLE        0
 #define shunt_CS
 //#define recovery_CS
 
@@ -85,15 +87,16 @@
 // Cell Arrangment 22S 1P - EVE Cells - 11 cell Per each IC
 
 #define CELL_CHEM_LFP
-#define CAN_BAUD_RATE_KBPS  250
-#define TOTAL_IC            2 //max 16
-#define AUX_PER_IC          6
-#define TEMP_PER_IC         5  //max 16
-#define CELLS_PER_IC        11 //max 16 - Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,0)
-#define STAT_REG            4
-#define DATA_LOOP_COUNT_n   5
-#define SEND_DATA_FREQ      8 //(val/10) seconds
-#define FC_CONTACTOR        0 // Board HAS fast-charge contactor hardware
+#define CAN_BAUD_RATE_KBPS      250
+#define TOTAL_IC                2 //max 16
+#define AUX_PER_IC              6
+#define TEMP_PER_IC             5  //max 16
+#define CELLS_PER_IC            11 //max 16 - Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,0)
+#define STAT_REG                4
+#define DATA_LOOP_COUNT_n       5
+#define SEND_DATA_FREQ          8 //(val/10) seconds
+#define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
+#define BALANCING_ENABLE        0
 #define shunt_CS
 //#define recovery_CS
 //#define CAN_CHILLER
@@ -104,15 +107,16 @@
 // Cell Arrangment 7S 29P - Ten Power - 3 Module per pack
 
 #define CELL_CHEM_NMC
-#define CAN_BAUD_RATE_KBPS  250
-#define TOTAL_IC            3 //max 16
-#define AUX_PER_IC          6
-#define TEMP_PER_IC         3  //max 16
-#define CELLS_PER_IC        9 //max 16 Cell Arrangement - (1,1,1,1,0,0,1,1,1,0,0,0)
-#define STAT_REG            4
-#define DATA_LOOP_COUNT_n   5
-#define SEND_DATA_FREQ      8 //(val/10) seconds
-#define FC_CONTACTOR        0 // Board HAS fast-charge contactor hardware
+#define CAN_BAUD_RATE_KBPS      250
+#define TOTAL_IC                3 //max 16
+#define AUX_PER_IC              6
+#define TEMP_PER_IC             3  //max 16
+#define CELLS_PER_IC            9 //max 16 Cell Arrangement - (1,1,1,1,0,0,1,1,1,0,0,0)
+#define STAT_REG                4
+#define DATA_LOOP_COUNT_n       5
+#define SEND_DATA_FREQ          8 //(val/10) seconds
+#define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
+#define BALANCING_ENABLE        0
 #define shunt_CS
 //#define RS485_current_sensor
 
@@ -121,45 +125,48 @@
 // Cell Arrangment 7S 29P - Ten Power - 3 Module per pack
 
 #define CELL_CHEM_NMC
-#define CAN_BAUD_RATE_KBPS  250
-#define TOTAL_IC            3 //max 16
-#define AUX_PER_IC          6
-#define TEMP_PER_IC         3  //max 16
-#define CELLS_PER_IC        9 //max 16  Cell Arrangement - (1,1,1,1,0,0,1,1,1,0,0,0)
-#define STAT_REG            4
-#define DATA_LOOP_COUNT_n   5
-#define SEND_DATA_FREQ      8 //(val/10) seconds
-#define FC_CONTACTOR        0 // Board HAS fast-charge contactor hardware
+#define CAN_BAUD_RATE_KBPS      250
+#define TOTAL_IC                3 //max 16
+#define AUX_PER_IC              6
+#define TEMP_PER_IC             3  //max 16
+#define CELLS_PER_IC            9 //max 16  Cell Arrangement - (1,1,1,1,0,0,1,1,1,0,0,0)
+#define STAT_REG                4
+#define DATA_LOOP_COUNT_n       5
+#define SEND_DATA_FREQ          8 //(val/10) seconds
+#define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
+#define BALANCING_ENABLE        0
 #define shunt_CS
 //#define recovery_CS
 
 #elif defined(SMALL_CAR)
 
 #define CELL_CHEM_LFP
-#define CAN_BAUD_RATE_KBPS  500
-#define TOTAL_IC            8 //max 16
-#define AUX_PER_IC          6
-#define TEMP_PER_IC         3  //max 16
-#define CELLS_PER_IC        12 //max 16 Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,1)
-#define STAT_REG            4
-#define DATA_LOOP_COUNT_n   5
-#define SEND_DATA_FREQ      8 //(val/10) seconds
-#define FC_CONTACTOR        1 // Board HAS fast-charge contactor hardware
+#define CAN_BAUD_RATE_KBPS      500
+#define TOTAL_IC                8 //max 16
+#define AUX_PER_IC              6
+#define TEMP_PER_IC             3  //max 16
+#define CELLS_PER_IC            12 //max 16 Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,1)
+#define STAT_REG                4
+#define DATA_LOOP_COUNT_n       5
+#define SEND_DATA_FREQ          8 //(val/10) seconds
+#define FC_CONTACTOR            1 // Board HAS fast-charge contactor hardware
+#define BALANCING_ENABLE        0
 #define CAN_current_sensor
 /*Define chiller*/
 
 #elif defined(ATV_3_MODULE)
 
 #define CELL_CHEM_NMC
-#define CAN_BAUD_RATE_KBPS  250
-#define TOTAL_IC            3 //max 16
-#define AUX_PER_IC          6
-#define TEMP_PER_IC         3  //max 16
-#define CELLS_PER_IC        10 //max 16 Cell Arrangement - (1,1,1,1,1,0,1,1,1,1,1,0)
-#define STAT_REG            4
-#define DATA_LOOP_COUNT_n   5
-#define SEND_DATA_FREQ      8 //(val/10) seconds
-#define FC_CONTACTOR        1 // Board HAS fast-charge contactor hardware
+#define CAN_BAUD_RATE_KBPS      250
+#define TOTAL_IC                3 //max 16
+#define AUX_PER_IC              6
+#define TEMP_PER_IC             3  //max 16
+#define CELLS_PER_IC            9 //max 16 Cell Arrangement - (1,1,1,1,1,0,1,1,1,1,1,0)
+#define STAT_REG                4
+#define DATA_LOOP_COUNT_n       5
+#define SEND_DATA_FREQ          8 //(val/10) seconds
+#define FC_CONTACTOR            1 // Board HAS fast-charge contactor hardware
+#define BALANCING_ENABLE        0
 #define shunt_CS
 //#define recovery_CS
 
