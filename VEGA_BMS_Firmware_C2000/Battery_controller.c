@@ -466,17 +466,23 @@ void main(void)
                     charge_complete = 0;
                     reset_charge_session();
                     // SOC Estimation error compare with voltage; if the min cell voltage is less than 3.15 and SOC is above 20%
-                    if (Controller.lowest_cell_volt < 31500
+                    if (Controller.lowest_cell_volt < 31250
                             && Controller.SOC_value > 20
-                            && !PDU_getData_local.fixSetG.bit.soc_estimation_error
-                            && SOC_estimation_error_delay > 100)
+                            && !PDU_getData_local.fixSetG.bit.soc_estimation_error)
                     {
-                        PDU_getData_local.fixSetG.bit.soc_estimation_error = 1;
-                        SOC_estimation_error_delay = 0;
+                        if (SOC_estimation_error_delay > 200)
+                        {
+                            PDU_getData_local.fixSetG.bit.soc_estimation_error =
+                                    1;
+                        }
+                        else
+                        {
+                            SOC_estimation_error_delay++;
+                        }
                     }
                     else
                     {
-                        SOC_estimation_error_delay++;
+                        SOC_estimation_error_delay = 0;
 
                     }
                 }
