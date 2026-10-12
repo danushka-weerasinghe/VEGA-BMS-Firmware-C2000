@@ -31,36 +31,34 @@
 
 // ---- Select ONE Battery Pack ----
 
-#define ETX_10_kWH                  // ETX with REPT cells 1P 23S
-// #define ETX_7_kWH                // ETX 1st Version with EVE cells  1P 22S
-// #define BIKE_2_MODULE_TENPOWER     // Pre-Protoype Bike 01 -   10S 20 P
-// #define BIKE_3_MODULE_TENPOWER   // 3D printed Panel Bike -  7S 29 P
-// #define BIKE_3_MODULE_MOLICELL   // Witout Body Panel Bike - 7S 29 P
-// #define SMALL_CAR                // Small Car Battery pack
-// #define ATV_3_MODULE             // ATV New Model with      - 7S -29P
 
 
+ #define ATV_3_MODULE                  // ATV New Model with      - 7S -29P
+// #define BIKE_2_MODULE_TENPOWER      // Pre-Protoype Bike 01 -   10S 20 P
+// #define BIKE_3_MODULE_MOLICELL      // Witout Body Panel Bike - 7S 29 P
+// #define BIKE_3_MODULE_TENPOWER      // 3D printed Panel Bike -  7S 29 P
+// #define ETX_7_kWH                   // ETX 1st Version with EVE cells  1P 22S
+// #define ETX_10_kWH                  // ETX with REPT cells 1P 23S
+// #define FORKLIFT                    // FORKKIFT AT PRODUCTION
+// #define SMALL_CAR                   // Small Car Battery pack
 
-#if defined(ETX_10_kWH)
 
-#define CELL_CHEM_LFP
+#if defined(ATV_3_MODULE)
+
+#define CELL_CHEM_NMC
 #define CAN_BAUD_RATE_KBPS      250
-#define TOTAL_IC                2 //max 16
+#define TOTAL_IC                3 //max 16
 #define AUX_PER_IC              6
 #define TEMP_PER_IC             3  //max 16
-#define CELLS_PER_IC            12 //max 16 - Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,1) && (1,1,1,1,1,1,1,1,1,1,1,0)
+#define CELLS_PER_IC            9 //max 16 Cell Arrangement - (1,1,1,1,1,0,1,1,1,1,1,0)
 #define STAT_REG                4
 #define DATA_LOOP_COUNT_n       5
 #define SEND_DATA_FREQ          8 //(val/10) seconds
 #define FC_CONTACTOR            1 // Board HAS fast-charge contactor hardware
 #define BALANCING_ENABLE        1
+#define PRECHARGE_DELAY         40
 #define shunt_CS
-//#define CAN_current_sensor
 //#define recovery_CS
-#define CAN_CHILLER
-//#define SCI_CHILLER
-#define CAN_PUMP
-//#define PWM_PUMP
 
 #elif defined(BIKE_2_MODULE_TENPOWER)
 
@@ -77,48 +75,9 @@
 #define SEND_DATA_FREQ          8 //(val/10) seconds
 #define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
 #define BALANCING_ENABLE        0
+#define PRECHARGE_DELAY         20
 #define shunt_CS
 //#define recovery_CS
-
-
-
-#elif defined(ETX_7_kWH)
-
-// Cell Arrangment 22S 1P - EVE Cells - 11 cell Per each IC
-
-#define CELL_CHEM_LFP
-#define CAN_BAUD_RATE_KBPS      250
-#define TOTAL_IC                2 //max 16
-#define AUX_PER_IC              6
-#define TEMP_PER_IC             5  //max 16
-#define CELLS_PER_IC            11 //max 16 - Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,0)
-#define STAT_REG                4
-#define DATA_LOOP_COUNT_n       5
-#define SEND_DATA_FREQ          8 //(val/10) seconds
-#define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
-#define BALANCING_ENABLE        0
-#define shunt_CS
-//#define recovery_CS
-//#define CAN_CHILLER
-//#define SCI_CHILLER
-
-#elif defined(BIKE_3_MODULE_TENPOWER)
-
-// Cell Arrangment 7S 29P - Ten Power - 3 Module per pack
-
-#define CELL_CHEM_NMC
-#define CAN_BAUD_RATE_KBPS      250
-#define TOTAL_IC                3 //max 16
-#define AUX_PER_IC              6
-#define TEMP_PER_IC             3  //max 16
-#define CELLS_PER_IC            9 //max 16 Cell Arrangement - (1,1,1,1,0,0,1,1,1,0,0,0)
-#define STAT_REG                4
-#define DATA_LOOP_COUNT_n       5
-#define SEND_DATA_FREQ          8 //(val/10) seconds
-#define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
-#define BALANCING_ENABLE        0
-#define shunt_CS
-//#define RS485_current_sensor
 
 #elif defined(BIKE_3_MODULE_MOLICELL)
 
@@ -135,8 +94,87 @@
 #define SEND_DATA_FREQ          8 //(val/10) seconds
 #define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
 #define BALANCING_ENABLE        0
+#define PRECHARGE_DELAY         20
 #define shunt_CS
 //#define recovery_CS
+
+#elif defined(BIKE_3_MODULE_TENPOWER)
+
+// Cell Arrangment 7S 29P - Ten Power - 3 Module per pack
+
+#define CELL_CHEM_NMC
+#define CAN_BAUD_RATE_KBPS      250
+#define TOTAL_IC                3 //max 16
+#define AUX_PER_IC              6
+#define TEMP_PER_IC             3  //max 16
+#define CELLS_PER_IC            9 //max 16 Cell Arrangement - (1,1,1,1,0,0,1,1,1,0,0,0)
+#define STAT_REG                4
+#define DATA_LOOP_COUNT_n       5
+#define SEND_DATA_FREQ          8 //(val/10) seconds
+#define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
+#define BALANCING_ENABLE        0
+#define PRECHARGE_DELAY         20
+#define shunt_CS
+//#define RS485_current_sensor
+
+#elif defined(ETX_7_kWH)
+
+// Cell Arrangment 22S 1P - EVE Cells - 11 cell Per each IC
+
+#define CELL_CHEM_LFP
+#define CAN_BAUD_RATE_KBPS      250
+#define TOTAL_IC                2 //max 16
+#define AUX_PER_IC              6
+#define TEMP_PER_IC             5  //max 16
+#define CELLS_PER_IC            11 //max 16 - Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,0)
+#define STAT_REG                4
+#define DATA_LOOP_COUNT_n       5
+#define SEND_DATA_FREQ          8 //(val/10) seconds
+#define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
+#define BALANCING_ENABLE        0
+#define PRECHARGE_DELAY         20
+#define shunt_CS
+//#define recovery_CS
+//#define CAN_CHILLER
+//#define SCI_CHILLER
+
+#elif defined(ETX_10_kWH)
+
+#define CELL_CHEM_LFP
+#define CAN_BAUD_RATE_KBPS      250
+#define TOTAL_IC                2 //max 16
+#define AUX_PER_IC              6
+#define TEMP_PER_IC             3  //max 16
+#define CELLS_PER_IC            12 //max 16 - Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,1) && (1,1,1,1,1,1,1,1,1,1,1,0)
+#define STAT_REG                4
+#define DATA_LOOP_COUNT_n       5
+#define SEND_DATA_FREQ          8 //(val/10) seconds
+#define FC_CONTACTOR            1 // Board HAS fast-charge contactor hardware
+#define BALANCING_ENABLE        1
+#define PRECHARGE_DELAY         20
+#define shunt_CS
+//#define CAN_current_sensor
+//#define recovery_CS
+#define CAN_CHILLER
+//#define SCI_CHILLER
+#define CAN_PUMP
+//#define PWM_PUMP
+
+#elif defined(FORKLIFT)
+
+#define CELL_CHEM_LFP
+#define CAN_BAUD_RATE_KBPS      250
+#define TOTAL_IC                2 //max 16
+#define AUX_PER_IC              6
+#define TEMP_PER_IC             3  //max 16
+#define CELLS_PER_IC            10 //max 16 - Cell Arrangement - (1,1,1,1,0,0,1,1,1,0,0,0) && (1,1,1,1,0,0,1,1,1,1,0,0)
+#define STAT_REG                4
+#define DATA_LOOP_COUNT_n       5
+#define SEND_DATA_FREQ          8 //(val/10) seconds
+#define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
+#define BALANCING_ENABLE        0
+#define PRECHARGE_DELAY         40
+#define shunt_CS
 
 #elif defined(SMALL_CAR)
 
@@ -151,24 +189,9 @@
 #define SEND_DATA_FREQ          8 //(val/10) seconds
 #define FC_CONTACTOR            1 // Board HAS fast-charge contactor hardware
 #define BALANCING_ENABLE        0
+#define PRECHARGE_DELAY         30
 #define CAN_current_sensor
 /*Define chiller*/
-
-#elif defined(ATV_3_MODULE)
-
-#define CELL_CHEM_NMC
-#define CAN_BAUD_RATE_KBPS      250
-#define TOTAL_IC                3 //max 16
-#define AUX_PER_IC              6
-#define TEMP_PER_IC             3  //max 16
-#define CELLS_PER_IC            9 //max 16 Cell Arrangement - (1,1,1,1,1,0,1,1,1,1,1,0)
-#define STAT_REG                4
-#define DATA_LOOP_COUNT_n       5
-#define SEND_DATA_FREQ          8 //(val/10) seconds
-#define FC_CONTACTOR            1 // Board HAS fast-charge contactor hardware
-#define BALANCING_ENABLE        0
-#define shunt_CS
-//#define recovery_CS
 
 #endif
 
@@ -183,10 +206,6 @@
 //#define FIX_SOC
 #define SOC_LV_CORRECTION 5
 
-
-#ifdef MASTER
-#define PRECHARGE_DELAY 20
-#endif
 
 #ifdef SLAVE
 #define PRECHARGE_DELAY 60

@@ -59,11 +59,11 @@ enum bDataType
 };
 //void canData();
 
-volatile int ecana_interrupt_counter = 0;
-volatile long ecana_int_set_counter = 0;
+volatile int  ecana_interrupt_counter     = 0;
+volatile long ecana_int_set_counter       = 0;
 volatile long ecana_int_slaveData_counter = 0;
-volatile long can_set_count_old = 0;
-volatile long chiller_rec_count = 0;
+volatile long can_set_count_old           = 0;
+volatile long chiller_rec_count           = 0;
 
 /*
  * lowest cell voltage moving avg window
@@ -2078,20 +2078,22 @@ void analyze_rdata()
     {
         for (local_counter = 0; local_counter < CELLS_PER_IC; local_counter++)
         {
-#if defined (ETX_10_kWH)
-            if((local_counter == 11) && (local_counter_ic == 1))
+#if defined(ATV_3_MODULE)
+            if((local_counter > 3) && (local_counter < 6))
+#elif defined(BIKE_2_MODULE_TENPOWER)
+            if(local_counter == 5)
+#elif defined(BIKE_3_MODULE_MOLICELL)
+            if((local_counter > 3) && (local_counter < 6))
+#elif defined(BIKE_3_MODULE_TENPOWER)
+            if((local_counter > 3) && (local_counter < 6))
 #elif defined(ETX_7_kWH)
             if(local_counter == 5)
-#elif defined(BIKE_2_MODULE_TENPOWER)
-             if(local_counter == 5)
-#elif defined(BIKE_3_MODULE_TENPOWER)
-             if((local_counter > 3) && (local_counter < 6))
-#elif defined(BIKE_3_MODULE_MOLICELL)
-             if((local_counter > 3) && (local_counter < 6))
+#elif defined(ETX_10_kWH)
+            if((local_counter == 11) && (local_counter_ic == 1))
+#elif defined(FORKLIFT)
+            if((local_counter == 4) || (local_counter == 5) || ((local_counter == 9) && (local_counter_ic == 0)))
 #elif defined(SMALL_CAR)
-              if(local_counter == 5)
-#elif defined(ATV_3_MODULE)
-              if((local_counter > 3) && (local_counter < 6))
+            if(0)
 #endif
             {
 //                local_counter++;
