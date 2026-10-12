@@ -29,8 +29,11 @@
 float last_saved_soc = 0.0f;
 float confirmed_saved_soc = 0.0f;
 float confirmed_soc = 0.0f;
-Uint8 pending_backup_save = 0;
+Uint8  pending_backup_save= 0;
 float Temp_soc = 0.0f;
+
+volatile Uint8 soc_saved_can_flag = 0;  //eerprom testing
+volatile Uint16 soc_save_counter   = 0; //eerprom testing
 
 #define FLAG_VALID   0x5A5A
 #define FLAG_INVALID 0x0000
@@ -996,6 +999,9 @@ void soc_calc_new(double current_value, unsigned int max_cell_voltage, unsigned 
                 Write_EEP_16bit(FLAG_VALID, ADDR_BACKUP_FLAG);
                 confirmed_saved_soc = confirmed_soc;
                 pending_backup_save = 0; // Lower the flag, transaction is complete
+
+                soc_save_counter++;
+                soc_saved_can_flag = 1 ;
             }
             soc_count++;
             break;

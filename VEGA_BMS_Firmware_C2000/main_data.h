@@ -54,6 +54,7 @@
 #define SEND_DATA_FREQ          8 //(val/10) seconds
 #define FC_CONTACTOR            1 // Board HAS fast-charge contactor hardware
 #define BALANCING_ENABLE        1
+#define PRECHARGE_DELAY         20
 #define shunt_CS
 //#define CAN_current_sensor
 //#define recovery_CS
@@ -77,6 +78,7 @@
 #define SEND_DATA_FREQ          8 //(val/10) seconds
 #define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
 #define BALANCING_ENABLE        0
+#define PRECHARGE_DELAY         20
 #define shunt_CS
 //#define recovery_CS
 
@@ -97,6 +99,7 @@
 #define SEND_DATA_FREQ          8 //(val/10) seconds
 #define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
 #define BALANCING_ENABLE        0
+#define PRECHARGE_DELAY         20
 #define shunt_CS
 //#define recovery_CS
 //#define CAN_CHILLER
@@ -117,6 +120,7 @@
 #define SEND_DATA_FREQ          8 //(val/10) seconds
 #define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
 #define BALANCING_ENABLE        0
+#define PRECHARGE_DELAY         20
 #define shunt_CS
 //#define RS485_current_sensor
 
@@ -135,6 +139,7 @@
 #define SEND_DATA_FREQ          8 //(val/10) seconds
 #define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
 #define BALANCING_ENABLE        0
+#define PRECHARGE_DELAY         20
 #define shunt_CS
 //#define recovery_CS
 
@@ -151,6 +156,7 @@
 #define SEND_DATA_FREQ          8 //(val/10) seconds
 #define FC_CONTACTOR            1 // Board HAS fast-charge contactor hardware
 #define BALANCING_ENABLE        0
+#define PRECHARGE_DELAY         40
 #define CAN_current_sensor
 /*Define chiller*/
 
@@ -167,6 +173,7 @@
 #define SEND_DATA_FREQ          8 //(val/10) seconds
 #define FC_CONTACTOR            1 // Board HAS fast-charge contactor hardware
 #define BALANCING_ENABLE        0
+#define PRECHARGE_DELAY         40
 #define shunt_CS
 //#define recovery_CS
 
@@ -185,7 +192,7 @@
 
 
 #ifdef MASTER
-#define PRECHARGE_DELAY 20
+//#define PRECHARGE_DELAY 20
 #endif
 
 #ifdef SLAVE

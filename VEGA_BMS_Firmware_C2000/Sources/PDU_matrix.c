@@ -7,6 +7,8 @@
 
 #include "PDU_matrix.h"
 #include "main_data.h"
+
+#include "soc_soh.h"   // eeprom testing
 //#include "BMS_controller_CAN.h"
 
 //getData *********************************************************************
@@ -93,8 +95,8 @@ void PDU_getData_write(uint16_t getData_index, Uint16* PDU_get_data)
             break;
         case 3:
             PDU_get_data[1] = PDU_getData_i.fixSetG.all;
-            PDU_get_data[2] = 0;
-            PDU_get_data[3] = 0;
+            PDU_get_data[2] = soc_saved_can_flag;              //eeprom testing
+            PDU_get_data[3] = soc_save_counter ;           //eeprom testing
             PDU_get_data[4] = c_count.send_coulomb_bytes.BYTE0;
             PDU_get_data[5] = c_count.send_coulomb_bytes.BYTE1;
             PDU_get_data[6] = c_count.send_coulomb_bytes.BYTE2;

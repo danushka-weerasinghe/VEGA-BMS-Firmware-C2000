@@ -59,11 +59,11 @@ enum bDataType
 };
 //void canData();
 
-volatile int ecana_interrupt_counter = 0;
-volatile long ecana_int_set_counter = 0;
+volatile int  ecana_interrupt_counter     = 0;
+volatile long ecana_int_set_counter       = 0;
 volatile long ecana_int_slaveData_counter = 0;
-volatile long can_set_count_old = 0;
-volatile long chiller_rec_count = 0;
+volatile long can_set_count_old           = 0;
+volatile long chiller_rec_count           = 0;
 
 /*
  * lowest cell voltage moving avg window
@@ -2768,7 +2768,6 @@ void contactor_operator()
                     {
                         bms_opMode = contactor_closed;
                         con_fb_try_count = 0;
-                        LED3_TGL;
                     }
                 }
                 break;

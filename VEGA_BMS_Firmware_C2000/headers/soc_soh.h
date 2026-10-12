@@ -15,6 +15,9 @@ extern float batt_capacity;
 extern volatile Uint8 can_force_soc_flag; //SOC force reset
 extern volatile Uint8 can_target_soc_val; //SOC force reset
 
+extern volatile Uint8 soc_saved_can_flag;
+extern volatile Uint16 soc_save_counter;
+
 
 void calc_soc_soh(double current_value, unsigned int max_cell_voltage,
                   unsigned int min_cell_voltage, float *soc);
