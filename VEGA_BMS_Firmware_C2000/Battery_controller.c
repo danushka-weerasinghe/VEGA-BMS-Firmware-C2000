@@ -2517,6 +2517,8 @@ Uint16 n_tries = 0;
 Uint16 con_fb_try_count = 0;
 Uint16 con_fb_try_count_fc = 0;
 Uint16 con_delay_count_fc = 0 ;
+Uint16 contactor_open_delay = 0 ;
+
 
 void contactor_operator()
 {
@@ -2666,15 +2668,26 @@ void contactor_operator()
         lv_trip_delay_count = 0;
     }
 
+    /* ============================================================
+     * Contactor mode / command handling (first matching branch runs)
+     * ============================================================ */
+
+    /* 1. Error: everything off */
+
     if (bms_opMode == error)
     {
         PRECHARGER_DIS;
         CON_DRIVER_DIS;
+        FC_CON_DRIVER_DIS;
     }
+
+    /* 2. Emergency: everything off, wait, then restart */
+
     else if ((bms_opMode == emergency_event) || (!EMG_FB))
     {
         PRECHARGER_DIS;
         CON_DRIVER_DIS;
+        FC_CON_DRIVER_DIS;
         bms_opMode = emergency_event;
         emg_delay++;
         if ((emg_delay > 100) && EMG_FB)
@@ -2683,6 +2696,9 @@ void contactor_operator()
             emg_delay = 0;
         }
     }
+
+    /* 3. Not initialized: weld check on the main contactor */
+
     else if (bms_opMode == not_initialized)
     {
         if (!CON_FB)
@@ -2696,6 +2712,9 @@ void contactor_operator()
             PDU_getData_local.fixSetG.bit.contactor_error = 1;
         }
     }
+
+    /* 4. ON command: run the closing sequence */
+
     else if (((bms_opMode == initialized) || (bms_opMode == contactor_closed) || (bms_opMode == fast_charging) ) && (PDU_setData_local.contactor_on == 1)
             && (PDU_setData_local.contactor_on_inverse == 2))
     {
@@ -2704,6 +2723,7 @@ void contactor_operator()
             case 0:
                 PRECHARGER_EN;
                 CON_DRIVER_DIS;
+                FC_CON_DRIVER_DIS;
                 precharge_timer = 0;
                 contactor_state++;
                 break;
@@ -2754,6 +2774,7 @@ void contactor_operator()
 
                     CON_DRIVER_EN;
                     PRECHARGER_DIS;
+                    FC_CON_DRIVER_DIS;
                     if(!CON_FB)
                     {
                         if(con_fb_try_count > 5)
@@ -2770,7 +2791,6 @@ void contactor_operator()
                     {
                         bms_opMode = contactor_closed;
                         con_fb_try_count = 0;
-                        LED3_TGL;
                     }
                 }
                 break;
@@ -2807,6 +2827,7 @@ void contactor_operator()
                         bms_opMode = fast_charging;
                         con_fb_try_count_fc = 0;
                         PDU_getData_local.fixSetChrg.bit.fc_contactor = 1;
+
                     }
                 }
                 break;
@@ -2816,6 +2837,49 @@ void contactor_operator()
                 break;
         }
     }
+
+    else if (((bms_opMode == contactor_closed) || (bms_opMode == fast_charging))
+             && (PDU_setData_local.contactor_on == 0)
+             && (PDU_setData_local.contactor_on_inverse == 0))
+    {
+        PRECHARGER_DIS;
+        CON_DRIVER_DIS;
+        FC_CON_DRIVER_DIS;
+
+        PDU_getData_local.fixSetChrg.bit.fc_contactor = 0;
+
+        contactor_state     = 0;
+        precharge_timer     = 0;
+        n_tries             = 0;
+        con_fb_try_count    = 0;
+        con_fb_try_count_fc = 0;
+        con_delay_count_fc  = 0;
+
+        /* give the contactor time to open  */
+
+        if (contactor_open_delay >5)
+        {
+            contactor_open_delay = 0;
+            bms_opMode = not_initialized;
+        }
+        else
+        {
+            contactor_open_delay++;
+        }
+    }
+
+    /* 6. OFF command while already open: stay put, keep everything off */
+
+    else if ((bms_opMode == initialized)
+             && (PDU_setData_local.contactor_on == 0)
+             && (PDU_setData_local.contactor_on_inverse == 0))
+    {
+        PRECHARGER_DIS;
+        CON_DRIVER_DIS;
+        FC_CON_DRIVER_DIS;
+        contactor_state = 0;
+    }
+
     PDU_getData_local.op_mode = bms_opMode;
       // after fc contractor closed
 }

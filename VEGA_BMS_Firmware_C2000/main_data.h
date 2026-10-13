@@ -29,9 +29,13 @@
 #define MASTER
 //#define SLAVE
 
+/*Define update status*/
+//#define J_TAG_BOOTLOADING
+#define CAN_BOOTLOADING
+
+#define EVCU_ACTIVE
+
 // ---- Select ONE Battery Pack ----
-
-
 
  #define ATV_3_MODULE                  // ATV New Model with      - 7S -29P
 // #define BIKE_2_MODULE_TENPOWER      // Pre-Protoype Bike 01 -   10S 20 P
@@ -196,11 +200,7 @@
 #endif
 
 
-/*Define update status*/
-//#define J_TAG_BOOTLOADING
-#define CAN_BOOTLOADING
 
-#define EVCU_ACTIVE
 
 /*Reset the SOC to defined value when moving avg is 3.00V*/
 //#define FIX_SOC
