@@ -2705,6 +2705,15 @@ void contactor_operator()
         {
             bms_opMode = initialized;
             contactor_state = 0;
+
+            if (FC_CONTACTOR == 1)
+            {
+
+            PDU_getData_local.fixSetChrg.bit.fc_contactor =  FC_CON_FB ;
+
+            }
+
+
         }
         else
         {
@@ -2815,7 +2824,6 @@ void contactor_operator()
                         if (con_fb_try_count_fc > 5)       /* same threshold as original: fires on 7th check */
                         {
                             PDU_getData_local.fixSetChrg.bit.fc_contactor = 0;
-                            bms_opMode = error;
                         }
                         else
                         {
@@ -2857,7 +2865,7 @@ void contactor_operator()
 
         /* give the contactor time to open  */
 
-        if (contactor_open_delay >5)
+        if ( contactor_open_delay > 5 )
         {
             contactor_open_delay = 0;
             bms_opMode = not_initialized;
@@ -3491,7 +3499,6 @@ void contactor_operator_fire()
                         if (con_fb_try_count_fc > 5)       /* same threshold as original: fires on 7th check */
                         {
                             PDU_getData_local.fixSetChrg.bit.fc_contactor = 0;
-                            bms_opMode = error;
                         }
                         else
                         {
@@ -3512,6 +3519,51 @@ void contactor_operator_fire()
                 break;
         }
     }
+
+    else if (((bms_opMode == contactor_closed) || (bms_opMode == fast_charging))
+              && (PDU_setData_local.contactor_on == 0)
+              && (PDU_setData_local.contactor_on_inverse == 0))
+     {
+         PRECHARGER_DIS;
+         CON_DRIVER_DIS;
+         FC_CON_DRIVER_DIS;
+
+         PDU_getData_local.fixSetChrg.bit.fc_contactor = 0;
+
+         contactor_state     = 0;
+         precharge_timer     = 0;
+         n_tries             = 0;
+         con_fb_try_count    = 0;
+         con_fb_try_count_fc = 0;
+         con_delay_count_fc  = 0;
+
+         /* give the contactor time to open  */
+
+         if ( contactor_open_delay > 5 )
+         {
+             contactor_open_delay = 0;
+             bms_opMode = not_initialized;
+         }
+         else
+         {
+             contactor_open_delay++;
+         }
+     }
+
+     /* 6. OFF command while already open: stay put, keep everything off */
+
+     else if ((bms_opMode == initialized)
+              && (PDU_setData_local.contactor_on == 0)
+              && (PDU_setData_local.contactor_on_inverse == 0))
+     {
+         PRECHARGER_DIS;
+         CON_DRIVER_DIS;
+         FC_CON_DRIVER_DIS;
+         contactor_state = 0;
+     }
+
+    PDU_getData_local.op_mode = bms_opMode;
+
 }
 
 int16 prechargerFeedback(void)
