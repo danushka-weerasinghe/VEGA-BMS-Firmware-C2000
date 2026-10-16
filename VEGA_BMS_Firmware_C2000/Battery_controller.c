@@ -2328,7 +2328,7 @@ void timer_task_can()
     PDU_getData_i = PDU_getData_local;
     PDU_getData_write(getData_index++, canMap.msg[CAN_OBJ_15].sendData);
     CAN_sendMessage(CAN_OBJ_15, NOMINAL_DLC, canMap.msg[CAN_OBJ_15].sendData);
-    if (getData_index > 3)
+    if (getData_index > 4)              //eeprom testing - widened to include new case 4 (SOC save diagnostics)
     {
         getData_index = 0;
     }

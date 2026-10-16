@@ -18,6 +18,12 @@ extern volatile Uint8 can_target_soc_val; //SOC force reset
 extern volatile Uint8 soc_saved_can_flag;
 extern volatile Uint16 soc_save_counter;
 
+extern volatile Uint16 eeprom_soc_write_fail_count;  //eeprom testing - counts failed I2C writes to SOC EEPROM
+extern volatile Uint8  soc_bank_mismatch_flag;        //eeprom testing - set at boot when main/backup SOC banks disagree
+extern volatile Uint8  soc_write_confirmed;           //eeprom testing - 1 = last SOC save cycle completed with zero I2C write failures
+extern Uint8  pending_backup_save;                    //eeprom testing - 1 while a save cycle is in progress
+extern Uint16 soc_count;                              //eeprom testing - save state-machine position (0-100)
+
 
 void calc_soc_soh(double current_value, unsigned int max_cell_voltage,
                   unsigned int min_cell_voltage, float *soc);

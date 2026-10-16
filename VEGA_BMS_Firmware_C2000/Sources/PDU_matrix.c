@@ -102,6 +102,16 @@ void PDU_getData_write(uint16_t getData_index, Uint16* PDU_get_data)
             PDU_get_data[6] = c_count.send_coulomb_bytes.BYTE2;
             PDU_get_data[7] = c_count.send_coulomb_bytes.BYTE3;
 //            memcpy((void *)& ECanaMboxes.MBOX15.MDH.all, (const void *)& INA229_data[4], sizeof(float));
+            break;
+        case 4:
+            PDU_get_data[1] = PDU_getData_i.fixSetG.all;
+            PDU_get_data[2] = eeprom_soc_write_fail_count;        //eeprom testing - low byte
+            PDU_get_data[3] = eeprom_soc_write_fail_count >> 8;   //eeprom testing - high byte
+            PDU_get_data[4] = soc_bank_mismatch_flag;             //eeprom testing
+            PDU_get_data[5] = soc_write_confirmed;                //eeprom testing
+            PDU_get_data[6] = pending_backup_save;                //eeprom testing - save cycle in progress
+            PDU_get_data[7] = soc_count;                          //eeprom testing - save state-machine position (0-100)
+            break;
         default:
             break;
     }

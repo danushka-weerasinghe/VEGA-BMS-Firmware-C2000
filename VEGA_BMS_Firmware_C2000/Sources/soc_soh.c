@@ -35,6 +35,10 @@ float Temp_soc = 0.0f;
 volatile Uint8 soc_saved_can_flag = 0;  //eerprom testing
 volatile Uint16 soc_save_counter   = 0; //eerprom testing
 
+volatile Uint16 eeprom_soc_write_fail_count = 0;  //eeprom testing - counts failed I2C writes to SOC EEPROM
+volatile Uint8  soc_bank_mismatch_flag = 0;        //eeprom testing - set at boot when main/backup SOC banks disagree
+volatile Uint8  soc_write_confirmed = 0;           //eeprom testing - 1 = last SOC save cycle completed with zero I2C write failures
+
 #define FLAG_VALID   0x5A5A
 #define FLAG_INVALID 0x0000
 
@@ -912,12 +916,15 @@ void soc_init(float *soc)
         }
         else if (main_flag == FLAG_VALID) {
             *soc = main_soc;
+            soc_bank_mismatch_flag = 1;
         }
         else if (backup_flag == FLAG_VALID) {
             *soc = backup_soc;
+            soc_bank_mismatch_flag = 1;
         }
         else {
             *soc = 45.0;
+            soc_bank_mismatch_flag = 1;
         }
     }
 
@@ -936,6 +943,8 @@ void soc_init(float *soc)
     INA229_reset_flag = 1;
 }
 
+
+static Uint16 cycle_fail_count_snapshot = 0;  //eeprom testing - fail-count baseline taken at the start of each save cycle
 
 void soc_calc_new(double current_value, unsigned int max_cell_voltage, unsigned int min_cell_voltage, float *soc)
 {
@@ -963,7 +972,10 @@ void soc_calc_new(double current_value, unsigned int max_cell_voltage, unsigned 
     switch (soc_count)
     {
         case 2: // Invalidate Main Bank
-            if (pending_backup_save) Write_EEP_16bit(FLAG_INVALID, ADDR_MAIN_FLAG);
+            if (pending_backup_save) {
+                cycle_fail_count_snapshot = eeprom_soc_write_fail_count;
+                Write_EEP_16bit(FLAG_INVALID, ADDR_MAIN_FLAG);
+            }
             soc_count++;
             break;
 
@@ -1002,6 +1014,7 @@ void soc_calc_new(double current_value, unsigned int max_cell_voltage, unsigned 
 
                 soc_save_counter++;
                 soc_saved_can_flag = 1 ;
+                soc_write_confirmed = (eeprom_soc_write_fail_count == cycle_fail_count_snapshot) ? 1 : 0;
             }
             soc_count++;
             break;
@@ -1096,6 +1109,10 @@ void Write_EEP_16bit(Uint16 flag_val, Uint8 *addr)
     buff[1] = flag_val & 0xFF;
 
     Status_write = I2CA_WriteToManyRegs(EEPROM_SOC_ADDR, addr, EEP_ADDR_LENGTH, buff, 2);
+    if (Status_write != 0)
+    {
+        eeprom_soc_write_fail_count++;
+    }
     DELAY_US(300);
 }
 
