@@ -37,10 +37,10 @@
 
 // ---- Select ONE Battery Pack ----
 
-// #define ATV_3_MODULE                  // ATV New Model with      - 7S -29P
+ #define ATV_3_MODULE                  // ATV New Model with      - 7S -29P
 // #define BIKE_2_MODULE_TENPOWER      // Pre-Protoype Bike 01 -   10S 20 P
 // #define BIKE_3_MODULE_MOLICELL      // 3D printed Panel Bike -  7S 29 P
- #define BIKE_3_MODULE_TENPOWER      // Witout Body Panel Bike - 7S 29 P
+// #define BIKE_3_MODULE_TENPOWER      // Witout Body Panel Bike - 7S 29 P
 // #define ETX_7_kWH                   // ETX 1st Version with EVE cells  1P 22S
 // #define ETX_10_kWH                  // ETX with REPT cells 1P 23S
 // #define FORKLIFT                    // FORKKIFT AT PRODUCTION

@@ -2518,6 +2518,7 @@ Uint16 con_fb_try_count = 0;
 Uint16 con_fb_try_count_fc = 0;
 Uint16 con_delay_count_fc = 0 ;
 Uint16 contactor_open_delay = 0 ;
+Uint16 fc_error_timer = 0 ;
 
 
 void contactor_operator()
@@ -2668,6 +2669,27 @@ void contactor_operator()
         lv_trip_delay_count = 0;
     }
 
+#if (FC_CONTACTOR == 1)
+
+    if (PDU_getData_local.fixSetChrg.bit.fc_contactor_error == 1)
+    {
+        if (fc_error_timer > 40)
+        {
+            bms_opMode = error;
+            trip_cause = com_error;
+            PDU_getData_local.fixSetG.bit.contactor_error = 1;
+        }
+        else
+        {
+            fc_error_timer++;
+        }
+    }
+    else
+    {
+        fc_error_timer = 0;
+    }
+#endif
+
     /* ============================================================
      * Contactor mode / command handling (first matching branch runs)
      * ============================================================ */
@@ -2706,12 +2728,18 @@ void contactor_operator()
             bms_opMode = initialized;
             contactor_state = 0;
 
-            if (FC_CONTACTOR == 1)
-            {
-
-            PDU_getData_local.fixSetChrg.bit.fc_contactor =  FC_CON_FB ;
-
-            }
+#if (FC_CONTACTOR == 1)
+        if (!FC_CON_FB)
+        {
+            PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 0;
+        }
+        else
+        {
+            PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 1;
+        }
+#else
+        PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 0;
+#endif
 
 
         }
@@ -2823,7 +2851,7 @@ void contactor_operator()
                     {
                         if (con_fb_try_count_fc > 5)       /* same threshold as original: fires on 7th check */
                         {
-                            PDU_getData_local.fixSetChrg.bit.fc_contactor = 0;
+                            PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 1;
                         }
                         else
                         {
@@ -2834,7 +2862,7 @@ void contactor_operator()
                     {
                         bms_opMode = fast_charging;
                         con_fb_try_count_fc = 0;
-                        PDU_getData_local.fixSetChrg.bit.fc_contactor = 1;
+                        PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 0;
 
                     }
                 }
@@ -2854,7 +2882,7 @@ void contactor_operator()
         CON_DRIVER_DIS;
         FC_CON_DRIVER_DIS;
 
-        PDU_getData_local.fixSetChrg.bit.fc_contactor = 0;
+        PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 0;
 
         contactor_state     = 0;
         precharge_timer     = 0;
@@ -3498,7 +3526,7 @@ void contactor_operator_fire()
                     {
                         if (con_fb_try_count_fc > 5)       /* same threshold as original: fires on 7th check */
                         {
-                            PDU_getData_local.fixSetChrg.bit.fc_contactor = 0;
+                            PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 1;
                         }
                         else
                         {
@@ -3509,7 +3537,7 @@ void contactor_operator_fire()
                     {
                         bms_opMode = fast_charging;
                         con_fb_try_count_fc = 0;
-                        PDU_getData_local.fixSetChrg.bit.fc_contactor = 1;
+                        PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 0;
                     }
                 }
                 break;
@@ -3528,7 +3556,7 @@ void contactor_operator_fire()
          CON_DRIVER_DIS;
          FC_CON_DRIVER_DIS;
 
-         PDU_getData_local.fixSetChrg.bit.fc_contactor = 0;
+         PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 0;
 
          contactor_state     = 0;
          precharge_timer     = 0;
