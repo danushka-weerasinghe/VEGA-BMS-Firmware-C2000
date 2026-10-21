@@ -2518,7 +2518,10 @@ Uint16 con_fb_try_count = 0;
 Uint16 con_fb_try_count_fc = 0;
 Uint16 con_delay_count_fc = 0 ;
 Uint16 contactor_open_delay = 0 ;
-Uint16 fc_error_timer = 0 ;
+#if (FC_CONTACTOR == 1)
+Uint8  fc_contactor_error_flag = 0;
+Uint16 fc_error_timer          = 0;
+#endif
 
 
 void contactor_operator()
@@ -2544,9 +2547,8 @@ void contactor_operator()
 
     if (Controller.highest_cell_volt > HIGHEST_CELL_VOLTAGE_LIMIT)
     {
-        if ((ov_trip_delay_count > 40) && ((PDU_setData_local.fixSetS.bit.EVCU_State == 4) || (current_val_A < -1) ))
+        if ((ov_trip_delay_count > 40) && ((PDU_setData_local.fixSetS.bit.EVCU_State == 4) || (current_val_A < -1)))
         {
-
             bms_opMode = error;
             trip_cause = hi_v_error;
 
@@ -2671,12 +2673,13 @@ void contactor_operator()
 
 #if (FC_CONTACTOR == 1)
 
-    if (PDU_getData_local.fixSetChrg.bit.fc_contactor_error == 1)
+    if (fc_contactor_error_flag == 1)
     {
-        if (fc_error_timer > 40)
+        if (fc_error_timer > 50)
         {
             bms_opMode = error;
-            trip_cause = com_error;
+            trip_cause = com_error;     /* replace with an FC contactor cause if you add one */
+            PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 1;
             PDU_getData_local.fixSetG.bit.contactor_error = 1;
         }
         else
@@ -2729,13 +2732,15 @@ void contactor_operator()
             contactor_state = 0;
 
 #if (FC_CONTACTOR == 1)
-        if (!FC_CON_FB)
+        if (FC_CON_FB)
         {
-            PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 0;
+//            PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 1;
+            fc_contactor_error_flag = 1;
         }
         else
         {
-            PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 1;
+//            PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 0;
+            fc_contactor_error_flag = 0 ;
         }
 #else
         PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 0;
@@ -2802,11 +2807,14 @@ void contactor_operator()
             case 3:
 
 
-                if (PDU_setData_local.fixSetS_EVCC.bit.fc_con_enble == 1 && FC_CONTACTOR == 1)
+#if (FC_CONTACTOR == 1)
+                if (PDU_setData_local.fixSetS_EVCC.bit.fc_con_enble == 1)
                 {
-                    contactor_state++;
+                    contactor_state++;          /* fast charge requested: go to case 4 */
                 }
                 else
+#endif
+
                 {
 
                     CON_DRIVER_EN;
@@ -2832,8 +2840,8 @@ void contactor_operator()
                 }
                 break;
 
+#if (FC_CONTACTOR == 1)
             case 4:
-
                 /* Disable pre-charge circuit */
                 CON_DRIVER_EN;
                 PRECHARGER_DIS;
@@ -2849,8 +2857,9 @@ void contactor_operator()
 
                     if (!CON_FB || !FC_CON_FB)             /* only check feedback after commanding ON */
                     {
-                        if (con_fb_try_count_fc > 5)       /* same threshold as original: fires on 7th check */
+                        if (con_fb_try_count_fc > 5)
                         {
+                            /* flag = 1: the timer block above sends the BMS to 'error' */
                             PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 1;
                         }
                         else
@@ -2863,10 +2872,10 @@ void contactor_operator()
                         bms_opMode = fast_charging;
                         con_fb_try_count_fc = 0;
                         PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 0;
-
                     }
                 }
                 break;
+#endif
 
             default:
                 contactor_state = 0;
@@ -3410,6 +3419,7 @@ void contactor_operator_fire()
     {
         PRECHARGER_DIS;
         CON_DRIVER_DIS;
+        FC_CON_DRIVER_DIS;
     }
     else if ((bms_opMode == emergency_event) || (!EMG_FB))
     {
@@ -3478,11 +3488,14 @@ void contactor_operator_fire()
 
             case 3:
 
-                if (PDU_setData_local.fixSetS_EVCC.bit.fc_con_enble == 1 && FC_CONTACTOR == 1)
+#if (FC_CONTACTOR == 1)
+
+                if (PDU_setData_local.fixSetS_EVCC.bit.fc_con_enble == 1)
                 {
-                    contactor_state++;
+                    contactor_state++;          /* fast charge requested: go to case 4 */
                 }
                 else
+#endif
                 {
 
                     CON_DRIVER_EN;
@@ -3503,12 +3516,11 @@ void contactor_operator_fire()
                     {
                         bms_opMode = contactor_closed;
                         con_fb_try_count = 0;
-                        LED3_TGL;
                     }
                 }
 
+#if (FC_CONTACTOR == 1)
             case 4:
-
                 /* Disable pre-charge circuit */
                 CON_DRIVER_EN;
                 PRECHARGER_DIS;
@@ -3524,8 +3536,9 @@ void contactor_operator_fire()
 
                     if (!CON_FB || !FC_CON_FB)             /* only check feedback after commanding ON */
                     {
-                        if (con_fb_try_count_fc > 5)       /* same threshold as original: fires on 7th check */
+                        if (con_fb_try_count_fc > 5)
                         {
+                            /* flag = 1: the timer block above sends the BMS to 'error' */
                             PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 1;
                         }
                         else
@@ -3541,6 +3554,7 @@ void contactor_operator_fire()
                     }
                 }
                 break;
+#endif
 
             default:
                 contactor_state = 0;
