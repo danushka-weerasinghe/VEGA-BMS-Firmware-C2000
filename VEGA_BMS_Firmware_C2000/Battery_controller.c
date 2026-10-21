@@ -470,17 +470,26 @@ void main(void)
                     reset_charge_session();
 
                     // SOC Estimation error compare with voltage; if the min cell voltage is less than 3.15 and SOC is above 20%
-                    if (Controller.lowest_cell_volt < SOC_ESTIMATION_ERROR_BASE_VALUE
-                            && Controller.SOC_value > 20
-                            && !PDU_getData_local.fixSetG.bit.soc_estimation_error
-                            && SOC_estimation_error_delay > 100)
+                    if (Controller.lowest_cell_volt < SOC_ESTIMATION_ERROR_BASE_VALUE && Controller.SOC_value > 20 && !PDU_getData_local.fixSetG.bit.soc_estimation_error)
                     {
-                        PDU_getData_local.fixSetG.bit.soc_estimation_error = 1;
-                        SOC_estimation_error_delay = 0;
+                        if(SOC_estimation_error_delay>200)
+
+                        {
+                            PDU_getData_local.fixSetG.bit.soc_estimation_error = 1;
+                            SOC_estimation_error_delay = 0;
+                        }
+
+                        else
+                        {
+
+                            SOC_estimation_error_delay++;
+
+                        }
+
                     }
                     else
                     {
-                        SOC_estimation_error_delay++;
+                        SOC_estimation_error_delay = 0;
 
                     }
 
@@ -2090,6 +2099,8 @@ void analyze_rdata()
             if(local_counter == 5)
 #elif defined(ETX_10_kWH)
             if((local_counter == 11) && (local_counter_ic == 1))
+#elif defined(ETX_12_kWH)
+            if(0)
 #elif defined(FORKLIFT)
             if((local_counter == 4) || (local_counter == 5) || ((local_counter == 9) && (local_counter_ic == 0)))
 #elif defined(SMALL_CAR)
@@ -2511,6 +2522,7 @@ Uint16 succed_packet_rec_count_c_old = 0;
 Uint16 lv_trip_delay_count = 0;
 Uint16 ov_trip_delay_count = 0;
 Uint16 oc_trip_delay_count = 0;
+Uint16 ot_trip_delay_count = 0;
 Uint16 emg_delay = 0;
 Uint16 precharge_timer = 0;
 Uint16 n_tries = 0;
@@ -2572,12 +2584,31 @@ void contactor_operator()
 
     if ((Controller.highest_temp > HIGHEST_TEMPERATURE_LIMIT) && (Controller.highest_temp < 100))
     {
-        PDU_getData_local.fixSetG.bit.batt_temperature_error = 1;
-        if (Controller.highest_temp > TEMPERATURE_CUTOFF)
+//        PDU_getData_local.fixSetG.bit.batt_temperature_error = 1;
+//        if (Controller.highest_temp > TEMPERATURE_CUTOFF)
+//        {
+//            trip_cause = hi_t_error;
+//            bms_opMode = error;
+//        }
+
+        if ((ot_trip_delay_count > 120) || (bms_opMode != contactor_closed))
         {
             trip_cause = hi_t_error;
             bms_opMode = error;
+            PDU_getData_local.fixSetG.bit.batt_temperature_error = 1;
+            ot_trip_delay_count = 0;
         }
+        else if (ot_trip_delay_count > 60)
+        {
+            ot_trip_delay_count++;
+            PDU_getData_local.fixSetG.bit.batt_temperature_error = 1;
+        }
+        else
+        {
+            ot_trip_delay_count++;
+        }
+
+
     }
     else
     {
