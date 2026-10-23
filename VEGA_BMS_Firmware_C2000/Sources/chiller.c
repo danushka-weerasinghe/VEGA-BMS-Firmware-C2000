@@ -76,7 +76,7 @@ void chillerData_write(Uint16* chiller_data_write)
 {
     chillerCtrl_data.comp_status = 1;
     chillerCtrl_data.comp_power_limit = 3;  // MAX Power 20*0.1 = 2KW
-    chillerCtrl_data.comp_speed = 2500;     //
+    chillerCtrl_data.comp_speed = 3200;     //
 
     chiller_data_write[0] = chillerCtrl_data.comp_speed;
     chiller_data_write[1] = chillerCtrl_data.comp_speed >> 8;

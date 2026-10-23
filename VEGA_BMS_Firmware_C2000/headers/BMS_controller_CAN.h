@@ -47,7 +47,7 @@ typedef enum
     CAN_OBJ_19, //chiller_rx
     CAN_OBJ_20, //chiller_tx
     CAN_OBJ_21,
-    CAN_OBJ_22,
+    CAN_OBJ_22, // GBT Protocol Tx
     CAN_OBJ_23,
     CAN_OBJ_24,
     CAN_OBJ_25,

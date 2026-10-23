@@ -37,13 +37,13 @@
 
 // ---- Select ONE Battery Pack ----
 
-// #define ATV_3_MODULE                  // ATV New Model with      - 7S -29P
+// #define ATV_3_MODULE                // ATV New Model with      - 7S -29P
 // #define BIKE_2_MODULE_TENPOWER      // Pre-Protoype Bike 01 -   10S 20 P
 // #define BIKE_3_MODULE_MOLICELL      // 3D printed Panel Bike -  7S 29 P
 // #define BIKE_3_MODULE_TENPOWER      // Witout Body Panel Bike - 7S 29 P
 // #define ETX_7_kWH                   // ETX 1st Version with EVE cells  1P 22S
-// #define ETX_10_kWH                  // ETX with REPT cells 1P 23S
- #define ETX_12_kWH                  // ETX with REPT cells 1p 22s
+ #define ETX_10_kWH                  // ETX with REPT cells 1P 23S
+// #define ETX_12_kWH                  // ETX with REPT cells 1p 22s
 // #define FORKLIFT                    // FORKKIFT AT PRODUCTION
 // #define SMALL_CAR                   // Small Car Battery pack
 
@@ -162,8 +162,8 @@
 //#define recovery_CS
 #define CAN_CHILLER
 //#define SCI_CHILLER
-#define CAN_PUMP
-//#define PWM_PUMP
+//#define CAN_PUMP
+#define PWM_PUMP
 
 #elif defined(ETX_12_kWH)
 
@@ -297,21 +297,22 @@
 /*
  * CAN MSG IDs
  */
-#define OTA_FLAG_ADDR 0x17B84
-#define OTA_RESPONSE_ADDR 0x67B84
-#define EVCC_ADDR 0x62
-#define BMS_CMD_ADDR 0xDB
-#define BMS_DEBUG_ADDR 0x69
-#define BMS_CAN_DATA_ADDR 0x32
-#define EVCU_ADDR 0x31
-#define EVCU_ODO_ADDR 0x41
-#define GET_SLAVE_ADDR 0x30
-#define SET_SLAVE_ADDR 0x29
-#define CHILLER_RX_ADDR 0x248
-#define CHILLER_TX_ADDR 0x238
-#define SET_CHG_ENERGY 0xEC
-#define BMS_CONFIG_UPDATE_ADDR 0xED
-#define EEPROM_BROADCAST_ADDR 0x35
+#define OTA_FLAG_ADDR           0x17B84
+#define OTA_RESPONSE_ADDR       0x67B84
+#define EVCC_ADDR               0x62
+#define BMS_CMD_ADDR            0xDB
+#define BMS_DEBUG_ADDR          0x69
+#define BMS_CAN_DATA_ADDR       0x32
+#define EVCU_ADDR               0x31
+#define EVCU_ODO_ADDR           0x41
+#define GET_SLAVE_ADDR          0x30
+#define SET_SLAVE_ADDR          0x29
+#define CHILLER_RX_ADDR         0x248
+#define CHILLER_TX_ADDR         0x238
+#define SET_CHG_ENERGY          0xEC
+#define BMS_CONFIG_UPDATE_ADDR  0xED
+#define EEPROM_BROADCAST_ADDR   0x35
+#define GBT_PROTOCOL_DATA       0x38
 /*
  * Request type & update type
  */

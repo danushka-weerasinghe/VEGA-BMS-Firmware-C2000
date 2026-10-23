@@ -660,6 +660,8 @@ void ECAN_CONFIG()
                            TX_DIR, STD_FRAME);
     CAN_setupMessageObject(CAN_OBJ_21, EVCU_ODO_ADDR, NOMINAL_DLC,
                            RX_DIR, STD_FRAME);
+    CAN_setupMessageObject(CAN_OBJ_22, GBT_PROTOCOL_DATA, NOMINAL_DLC,
+                           TX_DIR, STD_FRAME);
     CAN_setupMessageObject(CAN_OBJ_26, SET_CHG_ENERGY, NOMINAL_DLC,
                            RX_DIR, STD_FRAME);
     CAN_setupMessageObject(CAN_OBJ_27, BMS_CONFIG_UPDATE_ADDR, NOMINAL_DLC,
@@ -2327,6 +2329,7 @@ void timer_task_can()
 {
     static uint16_t getData_index = 0;
     static uint16_t debugData_index = 0;
+    static uint16_t GBT_Data_index = 0;
 
     PDU_getData_local.highest_pack_temparature = Controller.highest_temp;
 #ifdef MASTER
@@ -2344,6 +2347,16 @@ void timer_task_can()
     if (getData_index > 3)
     {
         getData_index = 0;
+    }
+
+    if(PDU_setData_local.fixSetS_EVCC.bit.GBT_connected)
+    {
+        PDU_gbt_Data_write(GBT_Data_index++ ,canMap.msg[CAN_OBJ_22].sendData);
+        CAN_sendMessage(CAN_OBJ_22, NOMINAL_DLC, canMap.msg[CAN_OBJ_22].sendData);
+        if (GBT_Data_index > 4)
+        {
+            GBT_Data_index = 0;
+        }
     }
 
     if (debug_CMD)
@@ -2536,6 +2549,18 @@ Uint16 fc_error_timer          = 0;
 #endif
 
 
+/*********************************************************************************************************
+** Function name:           contactor_operator
+** Descriptions:            Checks the safety limits (voltage, temperature, current, communication),
+**                          then runs the contactor sequence for the current bms_opMode.
+**                          Call it periodically. A trip sets bms_opMode = error, and the error branch
+**                          switches all contactor drivers off.
+** input parameters:        NONE (uses the globals: Controller, PDU_setData_local, Current_value, bms_opMode)
+** Output parameters:       bms_opMode, trip_cause, PDU_getData_local.fixSetG, PDU_getData_local.op_mode
+** Returned value:          NONE
+*********************************************************************************************************/
+
+
 void contactor_operator()
 {
     // check safety conditions
@@ -2582,16 +2607,15 @@ void contactor_operator()
         PDU_getData_local.fixSetG.bit.cell_voltage_error = 0;
     }
 
+    /* Over-temperature check, runs on every pass.
+     * With the contactor closed, a trip is delayed so a short peak does not stop the vehicle.
+     * With the contactor not closed there is no reason for high temperature, so it trips at once.
+     */
+
     if ((Controller.highest_temp > HIGHEST_TEMPERATURE_LIMIT) && (Controller.highest_temp < 100))
     {
-//        PDU_getData_local.fixSetG.bit.batt_temperature_error = 1;
-//        if (Controller.highest_temp > TEMPERATURE_CUTOFF)
-//        {
-//            trip_cause = hi_t_error;
-//            bms_opMode = error;
-//        }
 
-        if ((ot_trip_delay_count > 120) || (bms_opMode != contactor_closed))
+        if ( ((ot_trip_delay_count > 120) || (bms_opMode != contactor_closed) || (bms_opMode != fast_charging) ) && (Controller.highest_temp > TEMPERATURE_CUTOFF) )
         {
             trip_cause = hi_t_error;
             bms_opMode = error;
@@ -2608,10 +2632,10 @@ void contactor_operator()
             ot_trip_delay_count++;
         }
 
-
     }
     else
     {
+        ot_trip_delay_count = 0 ;
         PDU_getData_local.fixSetG.bit.batt_temperature_error = 0;
     }
 
@@ -2630,8 +2654,7 @@ void contactor_operator()
 
     if (Current_value > DISCHARGE_CURRENT_THRESHOLD)
     {
-        if ((oc_trip_delay_count > 100) || (bms_opMode != contactor_closed)
-                || (Current_value > SC_CURRENT_THRESHOLD))
+        if ((oc_trip_delay_count > 100) || (bms_opMode != contactor_closed) || (bms_opMode != fast_charging)  || (Current_value > SC_CURRENT_THRESHOLD))
         {
             bms_opMode = error;
             PDU_getData_local.fixSetG.bit.batt_current_error = 1;
@@ -2649,7 +2672,7 @@ void contactor_operator()
     }
     else if (Current_value < CHARGE_CURRENT_THRESHOLD)
     {
-        if ((oc_trip_delay_count > 100) || (bms_opMode != contactor_closed))
+        if ((oc_trip_delay_count > 100) || (bms_opMode != contactor_closed) || (bms_opMode != fast_charging)  )
         {
             bms_opMode = error;
             PDU_getData_local.fixSetG.bit.batt_current_error = 1;

@@ -103,9 +103,70 @@ void PDU_getData_write(uint16_t getData_index, Uint16* PDU_get_data)
         default:
             break;
     }
+}
 
-//    CAN_sendMessage(CAN_OBJ_15, NOMINAL_DLC, canMap.msg[CAN_OBJ_15].sendData);
-//    ECanaShadow.CANTRS.bit.TRS15 = 1;
+    void PDU_gbt_Data_write(uint16_t GBT_Data_index, Uint16* PDU_gbt_Data)
+    {
+        PDU_gbt_Data[0] = GBT_Data_index;
+
+        switch (GBT_Data_index)
+        {
+            case 0:
+                PDU_gbt_Data[1] = 0;
+                PDU_gbt_Data[2] = 1;
+                PDU_gbt_Data[3] = 2;
+                PDU_gbt_Data[4] = 3;
+                PDU_gbt_Data[5] = 4;
+                PDU_gbt_Data[6] = 5;
+                PDU_gbt_Data[7] = 6;
+                break;
+
+            case 1:
+                PDU_gbt_Data[1] = 0;
+                PDU_gbt_Data[2] = 1;
+                PDU_gbt_Data[3] = 2;
+                PDU_gbt_Data[4] = 3;
+                PDU_gbt_Data[5] = 4;
+                PDU_gbt_Data[6] = 5;
+                PDU_gbt_Data[7] = 6;
+                break;
+
+            case 2:
+                PDU_gbt_Data[1] = 0;
+                PDU_gbt_Data[2] = 1;
+                PDU_gbt_Data[3] = 2;
+                PDU_gbt_Data[4] = 3;
+                PDU_gbt_Data[5] = 4;
+                PDU_gbt_Data[6] = 5;
+                PDU_gbt_Data[7] = 6;
+                break;
+
+            case 3:
+                PDU_gbt_Data[1] = 0;
+                PDU_gbt_Data[2] = 1;
+                PDU_gbt_Data[3] = 2;
+                PDU_gbt_Data[4] = 3;
+                PDU_gbt_Data[5] = 4;
+                PDU_gbt_Data[6] = 5;
+                PDU_gbt_Data[7] = 6;
+                break;
+
+            case 4:
+                PDU_gbt_Data[1] = 0;
+                PDU_gbt_Data[2] = 1;
+                PDU_gbt_Data[3] = 2;
+                PDU_gbt_Data[4] = 3;
+                PDU_gbt_Data[5] = 4;
+                PDU_gbt_Data[6] = 5;
+                PDU_gbt_Data[7] = 6;
+                break;
+
+
+            default:
+                break;
+        }
+
+
 }
 
 void PDU_debugData_write(uint16_t db_index, Uint16* PDU_debug_data)
