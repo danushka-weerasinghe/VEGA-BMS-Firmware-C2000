@@ -951,17 +951,17 @@ void CAN_setupMessageObject(Mbox_obj_id_val st_obj_id, Uint32 set_msg_id, Uint8 
             }
             EALLOW;
             ECanaShadow.CANMD.all = ECanaRegs.CANMD.all;
-            ECanaShadow.CANMD.bit.MD20 = set_msg_dir;
+            ECanaShadow.CANMD.bit.MD22 = set_msg_dir;
             ECanaRegs.CANMD.all = ECanaShadow.CANMD.all;
             ECanaShadow.CANME.all = ECanaRegs.CANME.all;
-            ECanaShadow.CANME.bit.ME20 = 1;
+            ECanaShadow.CANME.bit.ME22 = 1;
             ECanaRegs.CANME.all = ECanaShadow.CANME.all;
             ECanaShadow.CANMIM.all = ECanaRegs.CANMIM.all;
-            ECanaShadow.CANMIM.bit.MIM20 = set_msg_dir;
+            ECanaShadow.CANMIM.bit.MIM22 = set_msg_dir;
             ECanaRegs.CANMIM.all = ECanaShadow.CANMIM.all;
             ECanaShadow.CANMIL.all = ECanaRegs.CANMIL.all;
 //            ECanaShadow.CANMIL.all = 0;
-            ECanaShadow.CANMIL.bit.MIL20 = set_msg_dir;
+            ECanaShadow.CANMIL.bit.MIL22 = set_msg_dir;
             ECanaRegs.CANMIL.all = ECanaShadow.CANMIL.all;
             EDIS;
             ECanaMboxes.MBOX22.MSGCTRL.bit.DLC = set_dlc;

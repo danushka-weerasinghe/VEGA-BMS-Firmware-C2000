@@ -84,13 +84,24 @@
 #elif defined(ETX_12_kWH)
 
 #define MIN_NOMINAL_CAPACITY      10
-#define MAX_NOMINAL_CAPACITY      171
-#define DEFAULT_NOMINAL_CAPACITY  130
+#define MAX_NOMINAL_CAPACITY      300
+#define DEFAULT_NOMINAL_CAPACITY  171
 
 // Current limits bounds (Scaled by 100)
 #define DEFAULT_CHARGE_LIMIT     -19000  // -190 Amps
 #define DEFAULT_DISCHARGE_LIMIT   17100   // 171 Ah
 #define DEFAULT_SC_LIMIT          20000   // 200 Amps
+
+#elif defined(FORKLIFT)
+
+#define MIN_NOMINAL_CAPACITY      10
+#define MAX_NOMINAL_CAPACITY      500
+#define DEFAULT_NOMINAL_CAPACITY  400
+
+// Current limits bounds (Scaled by 100)
+#define DEFAULT_CHARGE_LIMIT     -19000  // -190 Amps
+#define DEFAULT_DISCHARGE_LIMIT   30000   // 171 Ah
+#define DEFAULT_SC_LIMIT          35000   // 350 Amps
 
 #endif
 

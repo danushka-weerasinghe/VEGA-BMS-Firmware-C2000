@@ -7,6 +7,7 @@
 
 #include "PDU_matrix.h"
 #include "main_data.h"
+#include "GBT_data.h"
 //#include "BMS_controller_CAN.h"
 
 //getData *********************************************************************
@@ -105,69 +106,102 @@ void PDU_getData_write(uint16_t getData_index, Uint16* PDU_get_data)
     }
 }
 
-    void PDU_gbt_Data_write(uint16_t GBT_Data_index, Uint16* PDU_gbt_Data)
-    {
-        PDU_gbt_Data[0] = GBT_Data_index;
+#if (GBT_CHARGING == 1)
+Uint16 PDU_gbt_Data_frameCount(void)
+{
+    Uint16 cell_frames = (GBT_Data_i.cell_count + GBT_CELLS_PER_FRAME - 1) / GBT_CELLS_PER_FRAME;
+    Uint16 temp_frames = (GBT_Data_i.temp_count + GBT_TEMPS_PER_FRAME - 1) / GBT_TEMPS_PER_FRAME;
 
-        switch (GBT_Data_index)
-        {
-            case 0:
-                PDU_gbt_Data[1] = 0;
-                PDU_gbt_Data[2] = 1;
-                PDU_gbt_Data[3] = 2;
-                PDU_gbt_Data[4] = 3;
-                PDU_gbt_Data[5] = 4;
-                PDU_gbt_Data[6] = 5;
-                PDU_gbt_Data[7] = 6;
-                break;
-
-            case 1:
-                PDU_gbt_Data[1] = 0;
-                PDU_gbt_Data[2] = 1;
-                PDU_gbt_Data[3] = 2;
-                PDU_gbt_Data[4] = 3;
-                PDU_gbt_Data[5] = 4;
-                PDU_gbt_Data[6] = 5;
-                PDU_gbt_Data[7] = 6;
-                break;
-
-            case 2:
-                PDU_gbt_Data[1] = 0;
-                PDU_gbt_Data[2] = 1;
-                PDU_gbt_Data[3] = 2;
-                PDU_gbt_Data[4] = 3;
-                PDU_gbt_Data[5] = 4;
-                PDU_gbt_Data[6] = 5;
-                PDU_gbt_Data[7] = 6;
-                break;
-
-            case 3:
-                PDU_gbt_Data[1] = 0;
-                PDU_gbt_Data[2] = 1;
-                PDU_gbt_Data[3] = 2;
-                PDU_gbt_Data[4] = 3;
-                PDU_gbt_Data[5] = 4;
-                PDU_gbt_Data[6] = 5;
-                PDU_gbt_Data[7] = 6;
-                break;
-
-            case 4:
-                PDU_gbt_Data[1] = 0;
-                PDU_gbt_Data[2] = 1;
-                PDU_gbt_Data[3] = 2;
-                PDU_gbt_Data[4] = 3;
-                PDU_gbt_Data[5] = 4;
-                PDU_gbt_Data[6] = 5;
-                PDU_gbt_Data[7] = 6;
-                break;
-
-
-            default:
-                break;
-        }
-
-
+    return GBT_STATUS_FRAME_COUNT + ((cell_frames > temp_frames) ? cell_frames : temp_frames);
 }
+
+
+void PDU_gbt_Data_write(uint16_t GBT_Data_index, Uint16* PDU_gbt_Data)
+{
+    Uint16 i;
+    Uint16 frame_no;
+    Uint16 cell_no;
+    Uint16 cell_v;
+
+    PDU_gbt_Data[0] = GBT_Data_index;
+
+    switch (GBT_Data_index)
+    {
+    case 0:
+        PDU_gbt_Data[1] = GBT_Data_i.max_charge_voltage;
+        PDU_gbt_Data[2] = GBT_Data_i.max_charge_voltage >> 8;
+        PDU_gbt_Data[3] = GBT_Data_i.max_cell_charge_voltage;
+        PDU_gbt_Data[4] = GBT_Data_i.max_cell_charge_voltage >> 8;
+        PDU_gbt_Data[5] = GBT_Data_i.rated_voltage;
+        PDU_gbt_Data[6] = GBT_Data_i.rated_voltage >> 8;
+        PDU_gbt_Data[7] = GBT_Data_i.battery_type;
+        break;
+
+    case 1:
+        PDU_gbt_Data[1] = GBT_Data_i.total_energy;
+        PDU_gbt_Data[2] = GBT_Data_i.total_energy >> 8;
+        PDU_gbt_Data[3] = (Uint16)GBT_Data_i.max_permit_temp;
+        PDU_gbt_Data[4] = (Uint16)GBT_Data_i.max_permit_temp >> 8;
+        PDU_gbt_Data[5] = 0;
+        PDU_gbt_Data[6] = 0;
+        PDU_gbt_Data[7] = GBT_Data_i.highest_cell_id;
+        break;
+
+    case 2:
+        PDU_gbt_Data[1] = (Uint16)GBT_Data_i.lowest_temp;
+        PDU_gbt_Data[2] = (Uint16)GBT_Data_i.lowest_temp >> 8;
+        PDU_gbt_Data[3] = GBT_Data_i.lowest_temp_probe;
+        PDU_gbt_Data[4] = GBT_Data_i.highest_temp_probe;
+        PDU_gbt_Data[5] = GBT_Data_i.status_A.all;
+        PDU_gbt_Data[6] = GBT_Data_i.status_B.all;
+        PDU_gbt_Data[7] = GBT_Data_i.status_C.all;
+        break;
+
+    case 3:
+        PDU_gbt_Data[1] = GBT_Data_i.lowest_cell_id;
+        PDU_gbt_Data[2] = 0;
+        PDU_gbt_Data[3] = 0;
+        PDU_gbt_Data[4] = 0;
+        PDU_gbt_Data[5] = 0;
+        PDU_gbt_Data[6] = 0;
+        PDU_gbt_Data[7] = 0;
+        break;
+
+        default:    // 3 cell voltages + 1 temperature
+            if (GBT_Data_index < PDU_gbt_Data_frameCount())
+            {
+                frame_no = GBT_Data_index - GBT_STATUS_FRAME_COUNT;
+                cell_no = frame_no * GBT_CELLS_PER_FRAME;
+
+                /* temperature n + 1 in frame n */
+                if (frame_no < GBT_Data_i.temp_count)
+                {
+                    PDU_gbt_Data[7] = GBT_Data_i.temp[frame_no] & 0xFF;
+                }
+                else
+                {
+                    PDU_gbt_Data[7] = GBT_TEMP_INVALID;
+                }
+
+                for (i = 0; i < GBT_CELLS_PER_FRAME; i++)
+                {
+                    if (cell_no < GBT_Data_i.cell_count)
+                    {
+                        cell_v = GBT_Data_i.cell_voltage[cell_no];
+                    }
+                    else
+                    {
+                        cell_v = GBT_CELL_V_INVALID;
+                    }
+                    PDU_gbt_Data[1 + (i * 2)] = cell_v;
+                    PDU_gbt_Data[2 + (i * 2)] = cell_v >> 8;
+                    cell_no++;
+                }
+            }
+            break;
+    }
+}
+#endif /* GBT_CHARGING */
 
 void PDU_debugData_write(uint16_t db_index, Uint16* PDU_debug_data)
 {

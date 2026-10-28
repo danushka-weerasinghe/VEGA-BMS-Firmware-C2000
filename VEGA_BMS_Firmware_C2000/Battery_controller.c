@@ -28,6 +28,7 @@
 #include <chiller.h>
 #include <eprom_config.h>
 #include <Pump_PWM.h>
+#include "GBT_data.h"
 
 Uint16 count;
 
@@ -352,6 +353,12 @@ void main(void)
     init_pack_number();
     init_fw_update_date();
 
+#if (GBT_CHARGING == 1)
+    GBT_Data_init();
+#endif
+
+
+
     for (;;)
     {
         if (pending_eeprom_save_param != 0)
@@ -660,8 +667,10 @@ void ECAN_CONFIG()
                            TX_DIR, STD_FRAME);
     CAN_setupMessageObject(CAN_OBJ_21, EVCU_ODO_ADDR, NOMINAL_DLC,
                            RX_DIR, STD_FRAME);
+#if (GBT_CHARGING == 1)
     CAN_setupMessageObject(CAN_OBJ_22, GBT_PROTOCOL_DATA, NOMINAL_DLC,
                            TX_DIR, STD_FRAME);
+#endif
     CAN_setupMessageObject(CAN_OBJ_26, SET_CHG_ENERGY, NOMINAL_DLC,
                            RX_DIR, STD_FRAME);
     CAN_setupMessageObject(CAN_OBJ_27, BMS_CONFIG_UPDATE_ADDR, NOMINAL_DLC,
@@ -2329,7 +2338,9 @@ void timer_task_can()
 {
     static uint16_t getData_index = 0;
     static uint16_t debugData_index = 0;
+#if (GBT_CHARGING == 1)
     static uint16_t GBT_Data_index = 0;
+#endif
 
     PDU_getData_local.highest_pack_temparature = Controller.highest_temp;
 #ifdef MASTER
@@ -2349,15 +2360,18 @@ void timer_task_can()
         getData_index = 0;
     }
 
-    if(PDU_setData_local.fixSetS_EVCC.bit.GBT_connected)
+#if (GBT_CHARGING == 1)
+    if(PDU_setData_local.fixSetS_EVCC.bit.GBT_connected && (bms_opMode ==contactor_closed || bms_opMode == fast_charging))
     {
-        PDU_gbt_Data_write(GBT_Data_index++ ,canMap.msg[CAN_OBJ_22].sendData);
+        GBT_Data_update();
+        PDU_gbt_Data_write(GBT_Data_index++, canMap.msg[CAN_OBJ_22].sendData);
         CAN_sendMessage(CAN_OBJ_22, NOMINAL_DLC, canMap.msg[CAN_OBJ_22].sendData);
-        if (GBT_Data_index > 4)
+        if (GBT_Data_index >= PDU_gbt_Data_frameCount())
         {
             GBT_Data_index = 0;
         }
     }
+#endif
 
     if (debug_CMD)
     {
@@ -2896,6 +2910,18 @@ void contactor_operator()
 
 #if (FC_CONTACTOR == 1)
             case 4:
+
+                if (PDU_setData_local.fixSetS_EVCC.bit.fc_con_enble == 0)
+                {
+                    FC_CON_DRIVER_DIS;
+                    PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 0;
+                    con_fb_try_count_fc = 0;
+                    con_delay_count_fc  = 0;
+                    bms_opMode          = contactor_closed;
+                    contactor_state     = 3;
+                    break;
+                }
+
                 /* Disable pre-charge circuit */
                 CON_DRIVER_EN;
                 PRECHARGER_DIS;
