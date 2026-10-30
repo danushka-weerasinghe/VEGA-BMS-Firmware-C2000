@@ -2964,6 +2964,7 @@ void contactor_operator()
                         {
                             /* flag = 1: the timer block above sends the BMS to 'error' */
                             PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 1;
+                            fc_contactor_error_flag = 1 ;
                         }
                         else
                         {
