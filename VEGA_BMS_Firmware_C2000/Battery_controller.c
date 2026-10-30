@@ -2339,7 +2339,9 @@ void timer_task_can()
     static uint16_t getData_index = 0;
     static uint16_t debugData_index = 0;
 #if (GBT_CHARGING == 1)
-    static uint16_t GBT_Data_index = 0;
+    static uint16_t GBT_Data_index = GBT_SETUP_FRAME_COUNT;     // live frames
+    static uint16_t GBT_setup_index = GBT_SETUP_FRAME_COUNT;    // setup frames, >= count: nothing to send
+    static uint16_t GBT_setup_request_old = 0;
 #endif
 
     PDU_getData_local.highest_pack_temparature = Controller.highest_temp;
@@ -2361,39 +2363,60 @@ void timer_task_can()
     }
 
 #if (GBT_CHARGING == 1)
-    if(PDU_setData_local.fixSetS_EVCC.bit.GBT_connected && (bms_opMode ==contactor_closed || bms_opMode == fast_charging))
+    if (PDU_setData_local.fixSetS_EVCC.bit.GBT_connected)
     {
-        GBT_Data_update();
-        PDU_gbt_Data_write(GBT_Data_index++, canMap.msg[CAN_OBJ_22].sendData);
-        CAN_sendMessage(CAN_OBJ_22, NOMINAL_DLC, canMap.msg[CAN_OBJ_22].sendData);
-        if (GBT_Data_index >= PDU_gbt_Data_frameCount())
+        /* setup data: once per EVCC request (0 -> 1), also before the contactor is closed */
+        if (PDU_setData_local.fixSetS_EVCC.bit.GBT_setup_request && !GBT_setup_request_old)
         {
-            GBT_Data_index = 0;
+            GBT_setup_index = 0;
         }
-    }
-#endif
+        GBT_setup_request_old = PDU_setData_local.fixSetS_EVCC.bit.GBT_setup_request;
 
-    if (debug_CMD)
-    {
-        PDU_debugData_write(debugData_index++, canMap.msg[CAN_OBJ_14].sendData);
-        CAN_sendMessage(CAN_OBJ_14, NOMINAL_DLC, canMap.msg[CAN_OBJ_14].sendData);
-        if(slave_read.bit.sht30_read_enable_flag || slave_read.bit.open_wire_read_enable_flag)
+        if (GBT_setup_index < GBT_SETUP_FRAME_COUNT)
         {
-            if(debugData_index > 9)
-            {
-                debugData_index = 0;
-            }
+            GBT_Data_update();
+            PDU_gbt_Data_write(GBT_setup_index++, canMap.msg[CAN_OBJ_22].sendData);
+            CAN_sendMessage(CAN_OBJ_22, NOMINAL_DLC, canMap.msg[CAN_OBJ_22].sendData);
         }
-        else
+        else if (bms_opMode == contactor_closed || bms_opMode == fast_charging)
         {
-            debugData_index &= 0x07;
+            /* live data, setup frames are skipped */
+            GBT_Data_update();
+            PDU_gbt_Data_write(GBT_Data_index++, canMap.msg[CAN_OBJ_22].sendData);
+            CAN_sendMessage(CAN_OBJ_22, NOMINAL_DLC, canMap.msg[CAN_OBJ_22].sendData);
+            if (GBT_Data_index >= PDU_gbt_Data_frameCount())
+            {
+                GBT_Data_index = GBT_SETUP_FRAME_COUNT;
+            }
         }
     }
     else
     {
-        PDU_tempData_write(canMap.msg[CAN_OBJ_14].sendData);
-        CAN_sendMessage(CAN_OBJ_14, NOMINAL_DLC, canMap.msg[CAN_OBJ_14].sendData);
+        GBT_setup_request_old = 0;      // new request needed after reconnect
     }
+#endif
+
+
+    if (debug_CMD)
+    {
+         /* fixed frames (slave humidity / temperature / open wire) only when they are read */
+         if (!(slave_read.bit.sht30_read_enable_flag || slave_read.bit.open_wire_read_enable_flag)
+             && (debugData_index < DEBUG_FIXED_FRAME_COUNT))
+         {
+             debugData_index = DEBUG_FIXED_FRAME_COUNT;
+         }
+         PDU_debugData_write(debugData_index++, canMap.msg[CAN_OBJ_14].sendData);
+         CAN_sendMessage(CAN_OBJ_14, NOMINAL_DLC, canMap.msg[CAN_OBJ_14].sendData);
+         if (debugData_index >= PDU_debugData_frameCount())
+         {
+             debugData_index = 0;
+         }
+     }
+     else
+     {
+         PDU_tempData_write(canMap.msg[CAN_OBJ_14].sendData);
+         CAN_sendMessage(CAN_OBJ_14, NOMINAL_DLC, canMap.msg[CAN_OBJ_14].sendData);
+     }
 
 #ifdef MASTER
     if (slave_status)

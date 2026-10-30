@@ -214,9 +214,9 @@ static void GBT_status_update(void)
 /* total energy from nominal capacity in eprom_config (EEPROM / CAN configurable) */
 static void GBT_ratings_update(void)
 {
-    Uint16 rated_capacity = (Uint16)(nominal_capacity * 10);           // Ah -> 0.1 Ah
-
-    GBT_Data_i.total_energy = (Uint16)(((Uint32)GBT_Data_i.rated_voltage * rated_capacity + 5000) / 10000);  // 0.1 kWh
+    GBT_Data_i.rated_capacity = (Uint16)(nominal_capacity * 10);                     // Ah -> 0.1 Ah
+    GBT_Data_i.total_energy = (Uint16)(((Uint32)GBT_Data_i.rated_voltage * GBT_Data_i.rated_capacity + 5000) / 10000);  // 0.1 kWh
+    GBT_Data_i.max_charge_current = (Uint16)(-CHARGE_CURRENT_THRESHOLD / 10);        // 0.01 A, negative -> 0.1 A, positive
 }
 
 // Call after init_nominal_capacity() and init_current_limits()
@@ -260,11 +260,11 @@ void GBT_Data_init(void)
 void GBT_Data_update(void)
 {
 
-    GBT_Data_i.highest_cell_id = Controller.highest_cell_id;
+    GBT_Data_i.highest_cell_id = Controller.highest_cell_id + 1;            // Controller is 0-based -> 1-based
     GBT_Data_i.lowest_cell_id = Controller.lowest_cell_id + 1;              // Controller is 0-based -> 1-based
-    GBT_Data_i.highest_temp_probe = Controller.highest_temp_id;
+    GBT_Data_i.highest_temp_probe = Controller.highest_temp_id;             // Controller is already 1-based
     GBT_Data_i.lowest_temp = (int16)Controller.lowest_temp * 10;
-    GBT_Data_i.lowest_temp_probe = Controller.lowest_temp_id;
+    GBT_Data_i.lowest_temp_probe = Controller.lowest_temp_id;               // Controller is already 1-based
 
 
     GBT_ratings_update();       // follows capacity / current limit changes over CAN

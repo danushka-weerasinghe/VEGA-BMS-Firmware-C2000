@@ -34,40 +34,9 @@ typedef enum
 // ---- Per battery pack values (select pack in main_data.h) ----
 //  Rated capacity and max charging current come from eprom_config.c
 //  (nominal_capacity, CHARGE_CURRENT_THRESHOLD - EEPROM / CAN configurable).
-//  GBT_SERIES_CELLS       - number of cells in series
-//  GBT_CELL_UNUSED(ic, c) - true for unused cell positions (same as analyze_rdata)
 
-#if defined(ATV_3_MODULE)
-
-#define GBT_SERIES_CELLS        21      // 3 x 7S
-#define GBT_CELL_UNUSED(ic, c)  (((c) > 3) && ((c) < 6))
-
-#elif defined(BIKE_2_MODULE_TENPOWER)
-
-#define GBT_SERIES_CELLS        20      // 2 x 10S
-#define GBT_CELL_UNUSED(ic, c)  ((c) == 5)
-
-#elif defined(BIKE_3_MODULE_MOLICELL)
-
-#define GBT_SERIES_CELLS        21      // 3 x 7S
-#define GBT_CELL_UNUSED(ic, c)  (((c) > 3) && ((c) < 6))
-
-#elif defined(BIKE_3_MODULE_TENPOWER)
-
-#define GBT_SERIES_CELLS        21      // 3 x 7S
-#define GBT_CELL_UNUSED(ic, c)  (((c) > 3) && ((c) < 6))
-
-#elif defined(ETX_10_kWH)
-
-#define GBT_SERIES_CELLS        23
-#define GBT_CELL_UNUSED(ic, c)  (((c) == 11) && ((ic) == 1))
-
-#elif defined(ETX_12_kWH)
-
-#define GBT_SERIES_CELLS        22
-#define GBT_CELL_UNUSED(ic, c)  (0)
-
-#endif
+#define GBT_SERIES_CELLS        SERIES_CELLS
+#define GBT_CELL_UNUSED(ic, c)  CELL_UNUSED(ic, c)
 
 // ---- Per chemistry values ----
 //  GBT_NOMINAL_CELL_V     - nominal cell voltage, 0.01 V/bit
@@ -112,9 +81,10 @@ typedef enum
 
 #define GBT_TEMP_COUNT              (TOTAL_IC * TEMP_PER_IC)    // all BMS temperature probes
 
-#define GBT_STATUS_FRAME_COUNT      4       // index 0..3
-#define GBT_CELLS_PER_FRAME         3       // index 4.. = cell voltages
-#define GBT_TEMPS_PER_FRAME         1       // index 4.. = temperature, byte 7
+#define GBT_SETUP_FRAME_COUNT       3       // index 0..2 = setup data, sent once per EVCC request
+#define GBT_STATUS_FRAME_COUNT      5       // index 0..4 (setup 0..2 + live 3..4)
+#define GBT_CELLS_PER_FRAME         3       // index 5.. = cell voltages
+#define GBT_TEMPS_PER_FRAME         1       // index 5.. = temperature, byte 7
 
 
 /* 2-bit status values (sheet's "0x10" is binary 10 = 2) */
@@ -179,6 +149,8 @@ struct GBT_Data
     Uint16 rated_voltage;               // 0.1 V/bit
     Uint16 total_energy;                // 0.1 kWh/bit
     int16  max_permit_temp;             // 0.1 degC/bit
+    Uint16 rated_capacity;              // 0.1 Ah/bit, nominal_capacity
+    Uint16 max_charge_current;          // 0.1 A/bit, positive, CHARGE_CURRENT_THRESHOLD
 
     /* live data */
 

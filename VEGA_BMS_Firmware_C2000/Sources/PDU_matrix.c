@@ -127,6 +127,7 @@ void PDU_gbt_Data_write(uint16_t GBT_Data_index, Uint16* PDU_gbt_Data)
 
     switch (GBT_Data_index)
     {
+    /* setup data, index 0..2 - sent once per EVCC request (GBT_setup_request) */
     case 0:
         PDU_gbt_Data[1] = GBT_Data_i.max_charge_voltage;
         PDU_gbt_Data[2] = GBT_Data_i.max_charge_voltage >> 8;
@@ -142,12 +143,23 @@ void PDU_gbt_Data_write(uint16_t GBT_Data_index, Uint16* PDU_gbt_Data)
         PDU_gbt_Data[2] = GBT_Data_i.total_energy >> 8;
         PDU_gbt_Data[3] = (Uint16)GBT_Data_i.max_permit_temp;
         PDU_gbt_Data[4] = (Uint16)GBT_Data_i.max_permit_temp >> 8;
-        PDU_gbt_Data[5] = 0;
-        PDU_gbt_Data[6] = 0;
-        PDU_gbt_Data[7] = GBT_Data_i.highest_cell_id;
+        PDU_gbt_Data[5] = GBT_Data_i.rated_capacity;
+        PDU_gbt_Data[6] = GBT_Data_i.rated_capacity >> 8;
+        PDU_gbt_Data[7] = 0;
         break;
 
     case 2:
+        PDU_gbt_Data[1] = GBT_Data_i.max_charge_current;
+        PDU_gbt_Data[2] = GBT_Data_i.max_charge_current >> 8;
+        PDU_gbt_Data[3] = 0;
+        PDU_gbt_Data[4] = 0;
+        PDU_gbt_Data[5] = 0;
+        PDU_gbt_Data[6] = 0;
+        PDU_gbt_Data[7] = 0;
+        break;
+
+    /* live data, index 3.. - sent every cycle while charging */
+    case 3:
         PDU_gbt_Data[1] = (Uint16)GBT_Data_i.lowest_temp;
         PDU_gbt_Data[2] = (Uint16)GBT_Data_i.lowest_temp >> 8;
         PDU_gbt_Data[3] = GBT_Data_i.lowest_temp_probe;
@@ -157,11 +169,11 @@ void PDU_gbt_Data_write(uint16_t GBT_Data_index, Uint16* PDU_gbt_Data)
         PDU_gbt_Data[7] = GBT_Data_i.status_C.all;
         break;
 
-    case 3:
+    case 4:
         PDU_gbt_Data[1] = GBT_Data_i.lowest_cell_id;
-        PDU_gbt_Data[2] = 0;
-        PDU_gbt_Data[3] = 0;
-        PDU_gbt_Data[4] = 0;
+        PDU_gbt_Data[2] = GBT_Data_i.cell_count;            // series cells in the pack (SERIES_CELLS)
+        PDU_gbt_Data[3] = GBT_Data_i.temp_count;            // temperature probes (TOTAL_IC * TEMP_PER_IC)
+        PDU_gbt_Data[4] = GBT_Data_i.highest_cell_id;
         PDU_gbt_Data[5] = 0;
         PDU_gbt_Data[6] = 0;
         PDU_gbt_Data[7] = 0;
@@ -203,104 +215,101 @@ void PDU_gbt_Data_write(uint16_t GBT_Data_index, Uint16* PDU_gbt_Data)
 }
 #endif /* GBT_CHARGING */
 
+/* series cell number (0-based) -> BMS_data_IC[ic].cell_voltages[pos] */
+static Uint16 debug_cell_ic[DEBUG_CELL_COUNT];
+static Uint16 debug_cell_pos[DEBUG_CELL_COUNT];
+static Uint16 debug_cell_count = 0;
+
+// Call once at start up, unused cell positions (CELL_UNUSED) are skipped
+void PDU_debugData_init(void)
+{
+    Uint16 ic, c;
+
+    debug_cell_count = 0;
+    for (ic = 0; ic < TOTAL_IC; ic++)
+    {
+        for (c = 0; c < CELLS_PER_IC; c++)
+        {
+            if (!CELL_UNUSED(ic, c) && (debug_cell_count < DEBUG_CELL_COUNT))
+            {
+                debug_cell_ic[debug_cell_count] = ic;
+                debug_cell_pos[debug_cell_count] = c;
+                debug_cell_count++;
+            }
+        }
+    }
+}
+
+Uint16 PDU_debugData_frameCount(void)
+{
+    Uint16 cell_frames = (debug_cell_count + DEBUG_CELLS_PER_FRAME - 1) / DEBUG_CELLS_PER_FRAME;
+    Uint16 temp_frames = (DEBUG_TEMP_COUNT + DEBUG_TEMPS_PER_FRAME - 1) / DEBUG_TEMPS_PER_FRAME;
+
+    return DEBUG_FIXED_FRAME_COUNT + ((cell_frames > temp_frames) ? cell_frames : temp_frames);
+}
+
 void PDU_debugData_write(uint16_t db_index, Uint16* PDU_debug_data)
 {
+    Uint16 i;
+    Uint16 frame_no;
+    Uint16 cell_no;
+    Uint16 cell_v;
+
     PDU_debug_data[0] = db_index;
 
     switch (db_index)
     {
-        case 0:
-            PDU_debug_data[1] = BMS_data_IC[0].cell_voltages[0];
-            PDU_debug_data[2] = BMS_data_IC[0].cell_voltages[0] >> 8;
-            PDU_debug_data[3] = BMS_data_IC[0].cell_voltages[1];
-            PDU_debug_data[4] = BMS_data_IC[0].cell_voltages[1] >> 8;
-            PDU_debug_data[5] = BMS_data_IC[0].cell_voltages[2];
-            PDU_debug_data[6] = BMS_data_IC[0].cell_voltages[2] >> 8;
-            PDU_debug_data[7] = BMS_data_IC[0].temparature_val[0];
-            break;
+    case 0:
+        PDU_debug_data[1] = BMS_data_IC[0].slave_humidity_val;
+        PDU_debug_data[2] = BMS_data_IC[0].slave_humidity_val >> 8;
+        PDU_debug_data[3] = BMS_data_IC[0].slave_temperature_val;
+        PDU_debug_data[4] = BMS_data_IC[0].slave_temperature_val >> 8;
+        PDU_debug_data[5] = BMS_data_IC[0].open_wire_lsb;
+        PDU_debug_data[6] = BMS_data_IC[0].open_wire_msb;
+        PDU_debug_data[7] = PDU_getData_i.sht30_error;
+        break;
 
-        case 1:
-            PDU_debug_data[1] = BMS_data_IC[0].cell_voltages[3];
-            PDU_debug_data[2] = BMS_data_IC[0].cell_voltages[3] >> 8;
-            PDU_debug_data[3] = BMS_data_IC[0].cell_voltages[4];
-            PDU_debug_data[4] = BMS_data_IC[0].cell_voltages[4] >> 8;
-            PDU_debug_data[5] = BMS_data_IC[0].cell_voltages[5];
-            PDU_debug_data[6] = BMS_data_IC[0].cell_voltages[5] >> 8;
-            PDU_debug_data[7] = BMS_data_IC[0].temparature_val[1];
-            break;
-        case 2:
-            PDU_debug_data[1] = BMS_data_IC[0].cell_voltages[6];
-            PDU_debug_data[2] = BMS_data_IC[0].cell_voltages[6] >> 8;
-            PDU_debug_data[3] = BMS_data_IC[0].cell_voltages[7];
-            PDU_debug_data[4] = BMS_data_IC[0].cell_voltages[7] >> 8;
-            PDU_debug_data[5] = BMS_data_IC[0].cell_voltages[8];
-            PDU_debug_data[6] = BMS_data_IC[0].cell_voltages[8] >> 8;
-            PDU_debug_data[7] = BMS_data_IC[0].temparature_val[2];
-            break;
-        case 3:
-            PDU_debug_data[1] = BMS_data_IC[0].cell_voltages[9];
-            PDU_debug_data[2] = BMS_data_IC[0].cell_voltages[9] >> 8;
-            PDU_debug_data[3] = BMS_data_IC[0].cell_voltages[10];
-            PDU_debug_data[4] = BMS_data_IC[0].cell_voltages[10] >> 8;
-            PDU_debug_data[5] = BMS_data_IC[0].cell_voltages[11];
-            PDU_debug_data[6] = BMS_data_IC[0].cell_voltages[11] >> 8;
-            PDU_debug_data[7] = BMS_data_IC[1].temparature_val[0];
-            break;
-        case 4:
-            PDU_debug_data[1] = BMS_data_IC[1].cell_voltages[0];
-            PDU_debug_data[2] = BMS_data_IC[1].cell_voltages[0] >> 8;
-            PDU_debug_data[3] = BMS_data_IC[1].cell_voltages[1];
-            PDU_debug_data[4] = BMS_data_IC[1].cell_voltages[1] >> 8;
-            PDU_debug_data[5] = BMS_data_IC[1].cell_voltages[2];
-            PDU_debug_data[6] = BMS_data_IC[1].cell_voltages[2] >> 8;
-            PDU_debug_data[7] = BMS_data_IC[1].temparature_val[1];
-            break;
-        case 5:
-            PDU_debug_data[1] = BMS_data_IC[1].cell_voltages[3];
-            PDU_debug_data[2] = BMS_data_IC[1].cell_voltages[3] >> 8;
-            PDU_debug_data[3] = BMS_data_IC[1].cell_voltages[4];
-            PDU_debug_data[4] = BMS_data_IC[1].cell_voltages[4] >> 8;
-            PDU_debug_data[5] = BMS_data_IC[1].cell_voltages[5];
-            PDU_debug_data[6] = BMS_data_IC[1].cell_voltages[5] >> 8;
-            PDU_debug_data[7] = BMS_data_IC[1].temparature_val[2];
-            break;
-        case 6:
-            PDU_debug_data[1] = BMS_data_IC[1].cell_voltages[6];
-            PDU_debug_data[2] = BMS_data_IC[1].cell_voltages[6] >> 8;
-            PDU_debug_data[3] = BMS_data_IC[1].cell_voltages[7];
-            PDU_debug_data[4] = BMS_data_IC[1].cell_voltages[7] >> 8;
-            PDU_debug_data[5] = BMS_data_IC[1].cell_voltages[8];
-            PDU_debug_data[6] = BMS_data_IC[1].cell_voltages[8] >> 8;
-            PDU_debug_data[7] = 0;
-            break;
-        case 7:
-            PDU_debug_data[1] = BMS_data_IC[1].cell_voltages[9];
-            PDU_debug_data[2] = BMS_data_IC[1].cell_voltages[9] >> 8;
-            PDU_debug_data[3] = BMS_data_IC[1].cell_voltages[10];
-            PDU_debug_data[4] = BMS_data_IC[1].cell_voltages[10] >> 8;
-            PDU_debug_data[5] = PDU_getData_i.sht30_error;
-            PDU_debug_data[6] = 0;
-            PDU_debug_data[7] = 0;
-            break;
-        case 8:
-            PDU_debug_data[1] = BMS_data_IC[0].slave_humidity_val;
-            PDU_debug_data[2] = BMS_data_IC[0].slave_humidity_val>> 8;
-            PDU_debug_data[3] = BMS_data_IC[0].slave_temperature_val;
-            PDU_debug_data[4] = BMS_data_IC[0].slave_temperature_val>> 8;
-            PDU_debug_data[5] = BMS_data_IC[0].open_wire_lsb;
-            PDU_debug_data[6] = BMS_data_IC[0].open_wire_msb;
-            PDU_debug_data[7] = 0;
-            break;
-        case 9:
-            PDU_debug_data[1] = BMS_data_IC[1].slave_humidity_val;
-            PDU_debug_data[2] = BMS_data_IC[1].slave_humidity_val>> 8;
-            PDU_debug_data[3] = BMS_data_IC[1].slave_temperature_val;
-            PDU_debug_data[4] = BMS_data_IC[1].slave_temperature_val>> 8;
-            PDU_debug_data[5] = BMS_data_IC[1].open_wire_lsb;
-            PDU_debug_data[6] = BMS_data_IC[1].open_wire_msb;
-            PDU_debug_data[7] = 0;
-            break;
-        default:
+    case 1:
+        PDU_debug_data[1] = BMS_data_IC[1].slave_humidity_val;
+        PDU_debug_data[2] = BMS_data_IC[1].slave_humidity_val >> 8;
+        PDU_debug_data[3] = BMS_data_IC[1].slave_temperature_val;
+        PDU_debug_data[4] = BMS_data_IC[1].slave_temperature_val >> 8;
+        PDU_debug_data[5] = BMS_data_IC[1].open_wire_lsb;
+        PDU_debug_data[6] = BMS_data_IC[1].open_wire_msb;
+        PDU_debug_data[7] = 0;
+        break;
+
+        default:    // cell voltages, 3 cells per frame
+            if (db_index < PDU_debugData_frameCount())
+            {
+                frame_no = db_index - DEBUG_FIXED_FRAME_COUNT;
+                cell_no = frame_no * DEBUG_CELLS_PER_FRAME;
+
+                /* temperature n + 1 in frame n */
+                if (frame_no < DEBUG_TEMP_COUNT)
+                {
+                    PDU_debug_data[7] = BMS_data_IC[frame_no / TEMP_PER_IC].temparature_val[frame_no % TEMP_PER_IC] & 0xFF;
+                }
+                else
+                {
+                    PDU_debug_data[7] = DEBUG_TEMP_INVALID;
+                }
+
+                for (i = 0; i < DEBUG_CELLS_PER_FRAME; i++)
+                {
+                    if (cell_no < debug_cell_count)
+                    {
+                        cell_v = BMS_data_IC[debug_cell_ic[cell_no]].cell_voltages[debug_cell_pos[cell_no]];
+                    }
+                    else
+                    {
+                        cell_v = DEBUG_CELL_V_INVALID;
+                    }
+                    PDU_debug_data[1 + (i * 2)] = cell_v;
+                    PDU_debug_data[2 + (i * 2)] = cell_v >> 8;
+                    cell_no++;
+                }
+            }
             break;
     }
 

@@ -56,6 +56,8 @@
 #define AUX_PER_IC              6
 #define TEMP_PER_IC             3  //max 16
 #define CELLS_PER_IC            9 //max 16 Cell Arrangement - (1,1,1,1,1,0,1,1,1,1,1,0)
+#define SERIES_CELLS            21 // 3 x 7S
+#define CELL_UNUSED(ic, c)      (((c) > 3) && ((c) < 6)) // unused cell positions, same as analyze_rdata()
 #define STAT_REG                4
 #define DATA_LOOP_COUNT_n       5
 #define SEND_DATA_FREQ          8 //(val/10) seconds
@@ -76,6 +78,8 @@
 #define AUX_PER_IC              6
 #define TEMP_PER_IC             3  //max 16
 #define CELLS_PER_IC            11 //max 16 - Cell Arrangement - (1,1,1,1,1,0,1,1,1,1,1,0)
+#define SERIES_CELLS            20 // 2 x 10S
+#define CELL_UNUSED(ic, c)      ((c) == 5) // unused cell positions, same as analyze_rdata()
 #define STAT_REG                4
 #define DATA_LOOP_COUNT_n       5
 #define SEND_DATA_FREQ          8 //(val/10) seconds
@@ -96,6 +100,8 @@
 #define AUX_PER_IC              6
 #define TEMP_PER_IC             3  //max 16
 #define CELLS_PER_IC            9 //max 16  Cell Arrangement - (1,1,1,1,0,0,1,1,1,0,0,0)
+#define SERIES_CELLS            21 // 3 x 7S
+#define CELL_UNUSED(ic, c)      (((c) > 3) && ((c) < 6)) // unused cell positions, same as analyze_rdata()
 #define STAT_REG                4
 #define DATA_LOOP_COUNT_n       5
 #define SEND_DATA_FREQ          8 //(val/10) seconds
@@ -116,6 +122,8 @@
 #define AUX_PER_IC              6
 #define TEMP_PER_IC             3  //max 16
 #define CELLS_PER_IC            9 //max 16 Cell Arrangement - (1,1,1,1,0,0,1,1,1,0,0,0)
+#define SERIES_CELLS            21 // 3 x 7S
+#define CELL_UNUSED(ic, c)      (((c) > 3) && ((c) < 6)) // unused cell positions, same as analyze_rdata()
 #define STAT_REG                4
 #define DATA_LOOP_COUNT_n       5
 #define SEND_DATA_FREQ          8 //(val/10) seconds
@@ -136,6 +144,8 @@
 #define AUX_PER_IC              6
 #define TEMP_PER_IC             5  //max 16
 #define CELLS_PER_IC            11 //max 16 - Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,0)
+#define SERIES_CELLS            20 // 2 x 10S, as analyze_rdata
+#define CELL_UNUSED(ic, c)      ((c) == 5) // unused cell positions, same as analyze_rdata()
 #define STAT_REG                4
 #define DATA_LOOP_COUNT_n       5
 #define SEND_DATA_FREQ          8 //(val/10) seconds
@@ -156,6 +166,8 @@
 #define AUX_PER_IC              6
 #define TEMP_PER_IC             3  //max 16
 #define CELLS_PER_IC            12 //max 16 - Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,1) && (1,1,1,1,1,1,1,1,1,1,1,0)
+#define SERIES_CELLS            23 // 12S + 11S
+#define CELL_UNUSED(ic, c)      (((c) == 11) && ((ic) == 1)) // unused cell positions, same as analyze_rdata()
 #define STAT_REG                4
 #define DATA_LOOP_COUNT_n       5
 #define SEND_DATA_FREQ          8 //(val/10) seconds
@@ -179,6 +191,8 @@
 #define AUX_PER_IC              6
 #define TEMP_PER_IC             3  //max 16
 #define CELLS_PER_IC            11 //max 16 - Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,0) && (1,1,1,1,1,1,1,1,1,1,1,0)
+#define SERIES_CELLS            22 // 2 x 11S
+#define CELL_UNUSED(ic, c)      (0) // unused cell positions, same as analyze_rdata()
 #define STAT_REG                4
 #define DATA_LOOP_COUNT_n       5
 #define SEND_DATA_FREQ          8 //(val/10) seconds
@@ -202,6 +216,8 @@
 #define AUX_PER_IC              6
 #define TEMP_PER_IC             3  //max 16
 #define CELLS_PER_IC            10 //max 16 - Cell Arrangement - (1,1,1,1,0,0,1,1,1,0,0,0) && (1,1,1,1,0,0,1,1,1,1,0,0)
+#define SERIES_CELLS            15 // 7S + 8S
+#define CELL_UNUSED(ic, c)      (((c) == 4) || ((c) == 5) || (((c) == 9) && ((ic) == 0))) // unused cell positions, same as analyze_rdata()
 #define STAT_REG                4
 #define DATA_LOOP_COUNT_n       5
 #define SEND_DATA_FREQ          8 //(val/10) seconds
@@ -219,6 +235,8 @@
 #define AUX_PER_IC              6
 #define TEMP_PER_IC             3  //max 16
 #define CELLS_PER_IC            12 //max 16 Cell Arrangement - (1,1,1,1,1,1,1,1,1,1,1,1)
+#define SERIES_CELLS            96 // 8 x 12S
+#define CELL_UNUSED(ic, c)      (0) // unused cell positions, same as analyze_rdata()
 #define STAT_REG                4
 #define DATA_LOOP_COUNT_n       5
 #define SEND_DATA_FREQ          8 //(val/10) seconds
@@ -231,7 +249,16 @@
 
 #endif
 
-
+/*
+ * debug data (0x69) - frames 0..1 fixed, then 3 cell voltages + 1 temperature per frame
+ */
+#define DEBUG_FIXED_FRAME_COUNT     2                           // index 0..1, slave humidity / temperature / open wire
+#define DEBUG_CELLS_PER_FRAME       3                           // index 2..
+#define DEBUG_TEMPS_PER_FRAME       1                           // index 2..
+#define DEBUG_CELL_COUNT            SERIES_CELLS                // series cells, unused positions (CELL_UNUSED) skipped
+#define DEBUG_TEMP_COUNT            (TOTAL_IC * TEMP_PER_IC)
+#define DEBUG_CELL_V_INVALID        0xFFFF                      // no cell at this position
+#define DEBUG_TEMP_INVALID          0xFF                        // no temperature probe at this position
 
 
 /*Reset the SOC to defined value when moving avg is 3.00V*/
