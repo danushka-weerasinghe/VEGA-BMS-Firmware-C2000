@@ -48,7 +48,7 @@ BO_ 50 getData: 8 Vector__XXX
  SG_ opMode m0 : 16|8@1+ (1,0) [0|15] "" Vector__XXX
  SG_ lowestCell m0 : 24|16@1+ (0.001,0) [0|5] "V" Vector__XXX
  SG_ highestCell m0 : 40|16@1+ (0.001,0) [0|5] "V" Vector__XXX
- SG_ highestTemp m0 : 56|8@1+ (1,0) [0|0] "C" Vector__XXX
+ SG_ highestTemp m0 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
  SG_ time_to_80_hh m1 : 16|8@1+ (1,0) [0|255] "hours" Vector__XXX
  SG_ time_to_80_mm m1 : 24|8@1+ (1,0) [0|59] "minutes" Vector__XXX
  SG_ batteryCapacity m1 : 32|8@1+ (1,0) [0|255] "Ah" Vector__XXX
@@ -58,22 +58,23 @@ BO_ 50 getData: 8 Vector__XXX
  SG_ current m2 : 32|16@1- (0.01,0) [0|2000] "A" Vector__XXX
  SG_ soc m2 : 48|8@1+ (1,0) [0|100] "" Vector__XXX
  SG_ soh m2 : 56|8@1+ (1,0) [0|100] "" Vector__XXX
- SG_ lv_error : 8|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ precharger_error : 9|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ contactor_fb_error : 10|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ battery_temp_error : 11|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ bms_comm_error : 12|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ disc_current_error : 13|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ chrg_current_error : 14|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ cell_balancing_error : 15|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ cell_voltage_error : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ batt_current_error : 9|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ batt_temperature_error : 10|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ isolation_error : 11|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ contactor_error : 12|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ internal_comm_error : 13|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ soc_estimation_error : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ ODO_error : 15|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ chrg_complete_flag m1 : 40|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ cv_mode m1 : 41|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ charge_current_lim m1 : 42|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ over_temp m1 : 43|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ fc_contactor_error m1 : 43|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ low_soc m1 : 44|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ chiller_enable m1 : 45|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ charging m1 : 46|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ cell_hv_errpr m1 : 47|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ coulomb_count m3 : 39|32@0- (1,0) [-3.4E+038|3.4E+038] "As" Vector__XXX
+ SG_ BMS_power_down_ready m1 : 47|1@1+ (1,0) [0|1] "" Vector__XXX
 
 BO_ 105 debugData: 8 Vector__XXX
  SG_ db_index M : 0|8@1+ (1,0) [0|11] "" Vector__XXX
@@ -129,6 +130,7 @@ BO_ 49 setData: 8 Vector__XXX
  SG_ EVCU_state : 8|4@1+ (1,0) [0|8] "" Vector__XXX
  SG_ charger_connected : 12|1@1+ (1,0) [0|0] "" Vector__XXX
  SG_ Fire_mode : 13|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ EVCU_powerdown_ready : 15|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ charge_complete : 16|8@1+ (1,0) [0|0] "" Vector__XXX
  SG_ contactor_on : 32|8@1+ (1,0) [0|255] "" Vector__XXX
  SG_ contactor_on_inv : 40|8@1+ (1,0) [0|255] "" Vector__XXX
@@ -151,66 +153,70 @@ BO_ 219 db_commands: 8 Vector__XXX
  SG_ chiller_test : 16|8@1+ (1,0) [0|0] "" Vector__XXX
 
 BO_ 56 gbtData: 8 Vector__XXX
- SG_ GBT_Frame_ID M : 0|8@1+ (1,0) [0|13] "" Vector__XXX
+ SG_ GBT_Frame_ID M : 0|8@1+ (1,0) [0|14] "" Vector__XXX
  SG_ GBT_MaxChargeVoltage m0 : 8|16@1+ (0.1,0) [0|6553.5] "V" Vector__XXX
  SG_ GBT_MaxCellChargeVoltage m0 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
  SG_ GBT_RatedVoltage m0 : 40|16@1+ (0.1,0) [0|6553.5] "V" Vector__XXX
  SG_ GBT_BatteryType m0 : 56|8@1+ (1,0) [0|255] "" Vector__XXX
  SG_ GBT_TotalEnergy m1 : 8|16@1+ (0.1,0) [0|6553.5] "kWh" Vector__XXX
  SG_ GBT_MaxPermitTemp m1 : 24|16@1- (0.1,0) [-3276.8|3276.7] "C" Vector__XXX
- SG_ GBT_HighestCellID m1 : 56|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ GBT_LowestTemp m2 : 8|16@1- (0.1,0) [-3276.8|3276.7] "C" Vector__XXX
- SG_ GBT_LowestTempProbe m2 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ GBT_HighestTempProbe m2 : 32|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ GBT_CellVoltageState m2 : 40|2@1+ (1,0) [0|3] "" Vector__XXX
- SG_ GBT_SocState m2 : 42|2@1+ (1,0) [0|3] "" Vector__XXX
- SG_ GBT_ChargeOverCurrent m2 : 44|2@1+ (1,0) [0|3] "" Vector__XXX
- SG_ GBT_BatteryTempState m2 : 46|2@1+ (1,0) [0|3] "" Vector__XXX
- SG_ GBT_InsulationState m2 : 48|2@1+ (1,0) [0|3] "" Vector__XXX
- SG_ GBT_SingleCellVoltages m2 : 50|2@1+ (1,0) [0|3] "" Vector__XXX
- SG_ GBT_SingleCellTemps m2 : 52|2@1+ (1,0) [0|3] "" Vector__XXX
- SG_ GBT_BmsTempState m2 : 54|2@1+ (1,0) [0|3] "" Vector__XXX
- SG_ GBT_FcContactorState m2 : 56|2@1+ (1,0) [0|3] "" Vector__XXX
- SG_ GBT_LowestCellID m3 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ GBT_V_Cell_01 m4 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_02 m4 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_03 m4 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_04 m5 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_05 m5 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_06 m5 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_07 m6 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_08 m6 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_09 m6 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_10 m7 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_11 m7 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_12 m7 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_13 m8 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_14 m8 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_15 m8 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_16 m9 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_17 m9 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_18 m9 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_19 m10 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_20 m10 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_21 m10 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_22 m11 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_23 m11 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_24 m11 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_25 m12 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_26 m12 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_27 m12 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_28 m13 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_29 m13 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_V_Cell_30 m13 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
- SG_ GBT_T_Probe_1 m4 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
- SG_ GBT_T_Probe_2 m5 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
- SG_ GBT_T_Probe_3 m6 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
- SG_ GBT_T_Probe_4 m7 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
- SG_ GBT_T_Probe_5 m8 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
- SG_ GBT_T_Probe_6 m9 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
- SG_ GBT_T_Probe_7 m10 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
- SG_ GBT_T_Probe_8 m11 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
- SG_ GBT_T_Probe_9 m12 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
+ SG_ GBT_RatedCapacity m1 : 40|16@1+ (0.1,0) [0|6553.5] "Ah" Vector__XXX
+ SG_ GBT_MaxChargeCurrent m2 : 8|16@1+ (0.1,0) [0|6553.5] "A" Vector__XXX
+ SG_ GBT_LowestTemp m3 : 8|16@1- (0.1,0) [-3276.8|3276.7] "C" Vector__XXX
+ SG_ GBT_LowestTempProbe m3 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ GBT_HighestTempProbe m3 : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ GBT_CellVoltageState m3 : 40|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ GBT_SocState m3 : 42|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ GBT_ChargeOverCurrent m3 : 44|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ GBT_BatteryTempState m3 : 46|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ GBT_InsulationState m3 : 48|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ GBT_SingleCellVoltages m3 : 50|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ GBT_SingleCellTemps m3 : 52|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ GBT_BmsTempState m3 : 54|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ GBT_FcContactorState m3 : 56|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ GBT_LowestCellID m4 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ GBT_CellCount m4 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ GBT_TempProbeCount m4 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ GBT_HighestCellID m4 : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ GBT_V_Cell_01 m5 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_02 m5 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_03 m5 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_04 m6 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_05 m6 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_06 m6 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_07 m7 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_08 m7 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_09 m7 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_10 m8 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_11 m8 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_12 m8 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_13 m9 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_14 m9 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_15 m9 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_16 m10 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_17 m10 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_18 m10 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_19 m11 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_20 m11 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_21 m11 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_22 m12 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_23 m12 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_24 m12 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_25 m13 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_26 m13 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_27 m13 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_28 m14 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_29 m14 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_V_Cell_30 m14 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
+ SG_ GBT_T_Probe_1 m5 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
+ SG_ GBT_T_Probe_2 m6 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
+ SG_ GBT_T_Probe_3 m7 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
+ SG_ GBT_T_Probe_4 m8 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
+ SG_ GBT_T_Probe_5 m9 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
+ SG_ GBT_T_Probe_6 m10 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
+ SG_ GBT_T_Probe_7 m11 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
+ SG_ GBT_T_Probe_8 m12 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
+ SG_ GBT_T_Probe_9 m13 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
 
 BO_ 53 eepromData: 8 Vector__XXX
  SG_ EEP_Page_ID M : 0|8@1+ (1,0) [1|5] "" Vector__XXX
@@ -237,6 +243,61 @@ BO_ 53 eepromData: 8 Vector__XXX
  SG_ EEP_FwUpdateMonth m5 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
  SG_ EEP_FwUpdateDay m5 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
 
+BO_ 98 evccData: 8 Vector__XXX
+ SG_ EVCC_GBT_SetupRequest : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ EVCC_FcConEnable : 11|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ EVCC_CCS_Connected : 12|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ EVCC_CHADEMO_Connected : 13|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ EVCC_L2_Connected : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ EVCC_GBT_Connected : 15|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 48 getDataSlave: 8 Vector__XXX
+ SG_ Packet_ID M : 0|8@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ opMode m0 : 16|8@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ lowestCell m0 : 24|16@1+ (0.001,0) [0|5] "V" Vector__XXX
+ SG_ highestCell m0 : 40|16@1+ (0.001,0) [0|5] "V" Vector__XXX
+ SG_ highestTemp m0 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
+ SG_ time_to_80_hh m1 : 16|8@1+ (1,0) [0|255] "hours" Vector__XXX
+ SG_ time_to_80_mm m1 : 24|8@1+ (1,0) [0|59] "minutes" Vector__XXX
+ SG_ batteryCapacity m1 : 32|8@1+ (1,0) [0|255] "Ah" Vector__XXX
+ SG_ packVoltage m1 : 48|16@1+ (0.1,0) [0|1500] "V" Vector__XXX
+ SG_ time_to_100_hh m2 : 16|8@1+ (1,0) [0|255] "hours" Vector__XXX
+ SG_ time_to_100_mm m2 : 24|8@1+ (1,0) [0|59] "minutes" Vector__XXX
+ SG_ current m2 : 32|16@1- (0.01,0) [0|2000] "A" Vector__XXX
+ SG_ soc m2 : 48|8@1+ (1,0) [0|100] "" Vector__XXX
+ SG_ soh m2 : 56|8@1+ (1,0) [0|100] "" Vector__XXX
+ SG_ cell_voltage_error : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ batt_current_error : 9|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ batt_temperature_error : 10|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ isolation_error : 11|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ contactor_error : 12|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ internal_comm_error : 13|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ soc_estimation_error : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ ODO_error : 15|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ chrg_complete_flag m1 : 40|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ cv_mode m1 : 41|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ charge_current_lim m1 : 42|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ fc_contactor_error m1 : 43|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ low_soc m1 : 44|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ chiller_enable m1 : 45|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ charging m1 : 46|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ coulomb_count m3 : 39|32@0- (1,0) [-3.4E+038|3.4E+038] "As" Vector__XXX
+ SG_ BMS_power_down_ready m1 : 47|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 41 setDataSlave: 8 Vector__XXX
+ SG_ dataID : 0|8@1+ (1,0) [0|2] "" Vector__XXX
+ SG_ EVCU_state : 8|4@1+ (1,0) [0|8] "" Vector__XXX
+ SG_ charger_connected : 12|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ Fire_mode : 13|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ EVCU_powerdown_ready : 15|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ charge_complete : 16|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ contactor_on : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ contactor_on_inv : 40|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 65 evcuODO: 8 Vector__XXX
+ SG_ ODO_dataID : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ ODO_value : 8|32@1+ (1,0) [0|4294967295] "" Vector__XXX
+
 
 
 CM_ BO_ 3221225472 "This is a message for not used signals, created by Vector CANdb++ DBC OLE DB Provider.";
@@ -259,25 +320,22 @@ CM_ SG_ 50 time_to_100_mm "Time (MM) to full charge";
 CM_ SG_ 50 current "Battery current";
 CM_ SG_ 50 soc "State of charge of the battery";
 CM_ SG_ 50 soh "State of health of the battery";
-CM_ SG_ 50 lv_error "Low voltage error flag
-";
-CM_ SG_ 50 precharger_error "Precharger error flag";
-CM_ SG_ 50 contactor_fb_error "Contactor feedback error flag";
-CM_ SG_ 50 battery_temp_error "Battery high temperature error flag";
-CM_ SG_ 50 bms_comm_error "BMS internal communication error flag";
-CM_ SG_ 50 disc_current_error "Overcurrent (discharge) flag";
-CM_ SG_ 50 chrg_current_error "Overcurrent (charge) flag";
-CM_ SG_ 50 cell_balancing_error "Cell balancing error flag";
+CM_ SG_ 50 cell_voltage_error "fixSetG bit 0: cell voltage error";
+CM_ SG_ 50 batt_current_error "fixSetG bit 1: battery current error";
+CM_ SG_ 50 batt_temperature_error "fixSetG bit 2: battery temperature error";
+CM_ SG_ 50 isolation_error "fixSetG bit 3: isolation error";
+CM_ SG_ 50 contactor_error "fixSetG bit 4: contactor error (welded / no feedback)";
+CM_ SG_ 50 internal_comm_error "fixSetG bit 5: internal communication error";
+CM_ SG_ 50 soc_estimation_error "fixSetG bit 6: SOC estimation error";
+CM_ SG_ 50 ODO_error "fixSetG bit 7: ODO error";
 CM_ SG_ 50 chrg_complete_flag "Charge complete flag";
 CM_ SG_ 50 cv_mode "Constant voltage mode flag";
 CM_ SG_ 50 charge_current_lim "Charge current limit exceeded flag";
-CM_ SG_ 50 over_temp "High temperature warning flag during charge ";
+CM_ SG_ 50 fc_contactor_error "fixSetChrg bit 3: FC contactor error (no feedback after close)";
 CM_ SG_ 50 low_soc "Low SOC warning during charge flag";
 CM_ SG_ 50 chiller_enable "Chiller enable command";
 CM_ SG_ 50 charging "Charging status flag";
-CM_ SG_ 50 cell_hv_errpr "Cell high voltage error";
-CM_ BO_ 105 "BMS debug data dump
-";
+CM_ SG_ 50 BMS_power_down_ready "fixSetChrg bit 7: BMS power down ready";
 CM_ SG_ 105 db_index "Multiplexor ID
 ";
 CM_ BO_ 49 "EVCU data to BMS
@@ -286,8 +344,8 @@ CM_ BO_ 584 "Chiller data feedback
 ";
 CM_ BO_ 568 "Chiller commands
 ";
-CM_ BO_ 56 "GB/T 27930 charging data to EVCC (PDU_gbt_Data_write). Sent only while GBT_connected and contactor closed / fast charging. SOC, pack voltage, highest / lowest cell voltage, highest temperature, remaining time: see getData (0x32). Charge current limit, rated capacity: see eepromData (0x35).";
-CM_ SG_ 56 GBT_Frame_ID "Frame index: 0..3 status frames, 4.. = 3 cell voltages + 1 temperature";
+CM_ BO_ 56 "GB/T 27930 charging data to EVCC (PDU_gbt_Data_write). Index 0..2 setup data: sent once per EVCC GBT_setup_request (0 -> 1) while GBT_connected. Index 3.. live data: sent while GBT_connected and contactor closed / fast charging. SOC, pack voltage, highest / lowest cell voltage, highest temperature, remaining time: see getData (0x32).";
+CM_ SG_ 56 GBT_Frame_ID "Frame index: 0..2 setup (on EVCC request), 3..4 live, 5.. = 3 cell voltages + 1 temperature";
 CM_ SG_ 56 GBT_MaxChargeVoltage "Max charging voltage = max cell charge voltage x series cells";
 CM_ SG_ 56 GBT_MaxCellChargeVoltage "Max charging voltage of single cell (HIGHEST_CELL_VOLTAGE_LIMIT)";
 CM_ SG_ 56 GBT_RatedVoltage "Rated (nominal) pack voltage = nominal cell voltage x series cells";
@@ -307,7 +365,13 @@ CM_ SG_ 56 GBT_SingleCellVoltages "status_B: single cell voltages state (not set
 CM_ SG_ 56 GBT_SingleCellTemps "status_B: single cell temperatures state (not set in firmware)";
 CM_ SG_ 56 GBT_BmsTempState "status_B: BMS MCU temperature state";
 CM_ SG_ 56 GBT_FcContactorState "status_C: charge contactor state";
+CM_ SG_ 56 GBT_RatedCapacity "Rated capacity (nominal_capacity, EEPROM / CAN configurable)";
+CM_ SG_ 56 GBT_MaxChargeCurrent "Max charging current, positive (CHARGE_CURRENT_THRESHOLD)";
+CM_ BO_ 98 "EVCC (charger controller) to BMS, byte 1 = fixSetS_EVCC";
+CM_ SG_ 98 EVCC_GBT_SetupRequest "0 -> 1: BMS sends GB/T setup data once (0x38 index 0..2)";
 CM_ SG_ 56 GBT_LowestCellID "Lowest voltage cell number in series, 1-based";
+CM_ SG_ 56 GBT_CellCount "Number of series cells in the pack (SERIES_CELLS)";
+CM_ SG_ 56 GBT_TempProbeCount "Number of temperature probes (TOTAL_IC x TEMP_PER_IC)";
 CM_ SG_ 105 slave0_open_wire "Open wire bits, IC 0 (open_wire_msb:lsb)";
 CM_ SG_ 105 slave1_open_wire "Open wire bits, IC 1 (open_wire_msb:lsb)";
 CM_ SG_ 105 v_cell_0 "Series cell number, 0-based, unused positions (CELL_UNUSED) skipped. 0xFFFF = no cell";
@@ -317,6 +381,12 @@ CM_ SG_ 53 EEP_Page_ID "Multiplexor page 1..5";
 CM_ SG_ 53 EEP_ChargeCurrentLimit "Charge current limit, positive (CHARGE_CURRENT_THRESHOLD / -100)";
 CM_ SG_ 53 EEP_PackYear "BCD, e.g. 0x26 = 2026";
 CM_ SG_ 53 EEP_FwUpdateYear "BCD, e.g. 0x26 = 2026";
+CM_ SG_ 50 coulomb_count "Coulomb count (INA229), float, high byte first";
+CM_ SG_ 49 EVCU_powerdown_ready "fixSetS bit 7: EVCU power down ready";
+CM_ BO_ 48 "Slave BMS to master, same layout as getData (PDU_getDataSlave_read reads index 0..2)";
+CM_ BO_ 41 "Master BMS to slave, same layout as setData (PDU_setDataSlave_write)";
+CM_ BO_ 65 "EVCU ODO value to BMS (PDU_setData_read_ODO), read only when ODO_dataID = 0";
+CM_ BO_ 105 "BMS debug data when debug_CMD is set (PDU_debugData_write). When debug_CMD = 0 the same ID carries charged energy (PDU_tempData_write, no index byte): bytes 0-3 charged_energy (Wh, Uint32 LE), bytes 4-7 charged_energy_acc (Wh, Uint32 LE) - not decodable with this message";
 BA_DEF_ SG_  "SPN" INT 0 524287;
 BA_DEF_ BO_  "VFrameFormat" ENUM  "StandardCAN","ExtendedCAN","reserved","J1939PG";
 BA_DEF_  "DatabaseVersion" STRING ;
@@ -340,7 +410,11 @@ BA_ "VFrameFormat" BO_ 584 0;
 BA_ "VFrameFormat" BO_ 568 0;
 BA_ "VFrameFormat" BO_ 219 0;
 BA_ "VFrameFormat" BO_ 56 0;
+BA_ "VFrameFormat" BO_ 98 0;
 BA_ "VFrameFormat" BO_ 53 0;
+BA_ "VFrameFormat" BO_ 48 0;
+BA_ "VFrameFormat" BO_ 41 0;
+BA_ "VFrameFormat" BO_ 65 0;
 VAL_ 56 GBT_BatteryType 1 "Lead acid" 2 "NiMH" 3 "LFP" 4 "LMO" 5 "LCO" 6 "Ternary" 7 "Polymer Li-ion" 8 "Li titanate" 255 "Other" ;
 VAL_ 56 GBT_CellVoltageState 0 "Normal" 1 "Over high" 2 "Below low" 3 "Reserved" ;
 VAL_ 56 GBT_SocState 0 "Normal" 1 "Over high" 2 "Below low" 3 "Reserved" ;
@@ -354,3 +428,5 @@ VAL_ 56 GBT_FcContactorState 0 "Normal" 1 "Abnormal" 2 "Untrusted" 3 "Reserved" 
 VAL_ 53 EEP_CapacityHealth 0 "OK" 1 "Default loaded" ;
 VAL_ 53 EEP_CurrentsHealth 0 "OK" 1 "Default loaded" ;
 
+SIG_VALTYPE_ 50 coulomb_count : 1;
+SIG_VALTYPE_ 48 coulomb_count : 1;
