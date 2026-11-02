@@ -77,53 +77,59 @@ BO_ 50 getData: 8 Vector__XXX
  SG_ BMS_power_down_ready m1 : 47|1@1+ (1,0) [0|1] "" Vector__XXX
 
 BO_ 105 debugData: 8 Vector__XXX
- SG_ db_index M : 0|8@1+ (1,0) [0|11] "" Vector__XXX
- SG_ slave0_humidity m0 : 8|16@1+ (1,0) [0|100] "%" Vector__XXX
- SG_ slave0_temperature m0 : 24|16@1- (1,0) [-45|130] "*C" Vector__XXX
- SG_ slave0_open_wire m0 : 40|16@1+ (1,0) [0|65535] "" Vector__XXX
- SG_ slave1_humidity m1 : 8|16@1+ (1,0) [0|100] "%" Vector__XXX
- SG_ slave1_temperature m1 : 24|16@1- (1,0) [-45|130] "*C" Vector__XXX
- SG_ slave1_open_wire m1 : 40|16@1+ (1,0) [0|65535] "" Vector__XXX
- SG_ sht30_error m0 : 56|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ v_cell_0 m2 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_1 m2 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_2 m2 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_3 m3 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_4 m3 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_5 m3 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_6 m4 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_7 m4 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_8 m4 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_9 m5 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_10 m5 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_11 m5 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_12 m6 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_13 m6 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_14 m6 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_15 m7 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_16 m7 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_17 m7 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_18 m8 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_19 m8 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_20 m8 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_21 m9 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_22 m9 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_23 m9 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_24 m10 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_25 m10 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_26 m10 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_27 m11 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_28 m11 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ v_cell_29 m11 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ t_cell_0 m2 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
- SG_ t_cell_1 m3 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
- SG_ t_cell_2 m4 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
- SG_ t_cell_3 m5 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
- SG_ t_cell_4 m6 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
- SG_ t_cell_5 m7 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
- SG_ t_cell_6 m8 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
- SG_ t_cell_7 m9 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
- SG_ t_cell_8 m10 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
+ SG_ db_index M : 0|8@1+ (1,0) [0|13] "" Vector__XXX
+ SG_ ic_count m0 : 8|8@1+ (1,0) [0|16] "" Vector__XXX
+ SG_ cell_count m0 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ temp_count m0 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ slave0_humidity m1 : 8|16@1+ (1,0) [0|100] "%" Vector__XXX
+ SG_ slave0_temperature m1 : 24|16@1- (1,0) [-45|130] "*C" Vector__XXX
+ SG_ slave0_open_wire m1 : 40|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ slave1_humidity m2 : 8|16@1+ (1,0) [0|100] "%" Vector__XXX
+ SG_ slave1_temperature m2 : 24|16@1- (1,0) [-45|130] "*C" Vector__XXX
+ SG_ slave1_open_wire m2 : 40|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ slave2_humidity m3 : 8|16@1+ (1,0) [0|100] "%" Vector__XXX
+ SG_ slave2_temperature m3 : 24|16@1- (1,0) [-45|130] "*C" Vector__XXX
+ SG_ slave2_open_wire m3 : 40|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ sht30_error m1 : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ v_cell_0 m4 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_1 m4 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_2 m4 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_3 m5 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_4 m5 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_5 m5 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_6 m6 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_7 m6 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_8 m6 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_9 m7 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_10 m7 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_11 m7 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_12 m8 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_13 m8 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_14 m8 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_15 m9 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_16 m9 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_17 m9 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_18 m10 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_19 m10 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_20 m10 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_21 m11 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_22 m11 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_23 m11 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_24 m12 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_25 m12 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_26 m12 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_27 m13 : 8|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_28 m13 : 24|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ v_cell_29 m13 : 40|16@1+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ t_cell_0 m4 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
+ SG_ t_cell_1 m5 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
+ SG_ t_cell_2 m6 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
+ SG_ t_cell_3 m7 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
+ SG_ t_cell_4 m8 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
+ SG_ t_cell_5 m9 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
+ SG_ t_cell_6 m10 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
+ SG_ t_cell_7 m11 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
+ SG_ t_cell_8 m12 : 56|8@1+ (1,0) [0|255] "*C" Vector__XXX
 
 BO_ 49 setData: 8 Vector__XXX
  SG_ dataID : 0|8@1+ (1,0) [0|2] "" Vector__XXX
@@ -244,7 +250,7 @@ BO_ 53 eepromData: 8 Vector__XXX
  SG_ EEP_FwUpdateDay m5 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
 
 BO_ 98 evccData: 8 Vector__XXX
- SG_ EVCC_GBT_SetupRequest : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ EVCC_GBT_SetupRequest : 10|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ EVCC_FcConEnable : 11|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ EVCC_CCS_Connected : 12|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ EVCC_CHADEMO_Connected : 13|1@1+ (1,0) [0|1] "" Vector__XXX
@@ -374,6 +380,9 @@ CM_ SG_ 56 GBT_CellCount "Number of series cells in the pack (SERIES_CELLS)";
 CM_ SG_ 56 GBT_TempProbeCount "Number of temperature probes (TOTAL_IC x TEMP_PER_IC)";
 CM_ SG_ 105 slave0_open_wire "Open wire bits, IC 0 (open_wire_msb:lsb)";
 CM_ SG_ 105 slave1_open_wire "Open wire bits, IC 1 (open_wire_msb:lsb)";
+CM_ SG_ 105 cell_count "Series cells in the pack (unused positions CELL_UNUSED skipped), always sent";
+CM_ SG_ 105 temp_count "Temperature probes in the pack (TOTAL_IC x TEMP_PER_IC), always sent";
+CM_ SG_ 105 ic_count "Cell monitor ICs in the pack (TOTAL_IC). This DBC is made for 3 ICs - frame layout moves with TOTAL_IC";
 CM_ SG_ 105 v_cell_0 "Series cell number, 0-based, unused positions (CELL_UNUSED) skipped. 0xFFFF = no cell";
 CM_ SG_ 105 t_cell_0 "Temperature probes (ic x TEMP_PER_IC + t), 0-based. 0xFF = no probe";
 CM_ BO_ 53 "EEPROM configuration broadcast (broadcast_eeprom_data_over_can), every 10th CAN task pass, pages 1..5";

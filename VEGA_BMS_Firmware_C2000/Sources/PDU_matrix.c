@@ -251,6 +251,7 @@ Uint16 PDU_debugData_frameCount(void)
 void PDU_debugData_write(uint16_t db_index, Uint16* PDU_debug_data)
 {
     Uint16 i;
+    Uint16 ic;
     Uint16 frame_no;
     Uint16 cell_no;
     Uint16 cell_v;
@@ -259,28 +260,29 @@ void PDU_debugData_write(uint16_t db_index, Uint16* PDU_debug_data)
 
     switch (db_index)
     {
-    case 0:
-        PDU_debug_data[1] = BMS_data_IC[0].slave_humidity_val;
-        PDU_debug_data[2] = BMS_data_IC[0].slave_humidity_val >> 8;
-        PDU_debug_data[3] = BMS_data_IC[0].slave_temperature_val;
-        PDU_debug_data[4] = BMS_data_IC[0].slave_temperature_val >> 8;
-        PDU_debug_data[5] = BMS_data_IC[0].open_wire_lsb;
-        PDU_debug_data[6] = BMS_data_IC[0].open_wire_msb;
-        PDU_debug_data[7] = PDU_getData_i.sht30_error;
-        break;
-
-    case 1:
-        PDU_debug_data[1] = BMS_data_IC[1].slave_humidity_val;
-        PDU_debug_data[2] = BMS_data_IC[1].slave_humidity_val >> 8;
-        PDU_debug_data[3] = BMS_data_IC[1].slave_temperature_val;
-        PDU_debug_data[4] = BMS_data_IC[1].slave_temperature_val >> 8;
-        PDU_debug_data[5] = BMS_data_IC[1].open_wire_lsb;
-        PDU_debug_data[6] = BMS_data_IC[1].open_wire_msb;
+    case DEBUG_LAYOUT_FRAME:     // pack layout
+        PDU_debug_data[1] = TOTAL_IC;
+        PDU_debug_data[2] = debug_cell_count;
+        PDU_debug_data[3] = DEBUG_TEMP_COUNT;
+        PDU_debug_data[4] = 0;
+        PDU_debug_data[5] = 0;
+        PDU_debug_data[6] = 0;
         PDU_debug_data[7] = 0;
         break;
 
-        default:    // cell voltages, 3 cells per frame
-            if (db_index < PDU_debugData_frameCount())
+        default:
+            if (db_index < DEBUG_FIXED_FRAME_COUNT)             // slave IC data, one frame per IC
+            {
+                ic = db_index - DEBUG_SLAVE_FRAME_FIRST;
+                PDU_debug_data[1] = BMS_data_IC[ic].slave_humidity_val;
+                PDU_debug_data[2] = BMS_data_IC[ic].slave_humidity_val >> 8;
+                PDU_debug_data[3] = BMS_data_IC[ic].slave_temperature_val;
+                PDU_debug_data[4] = BMS_data_IC[ic].slave_temperature_val >> 8;
+                PDU_debug_data[5] = BMS_data_IC[ic].open_wire_lsb;
+                PDU_debug_data[6] = BMS_data_IC[ic].open_wire_msb;
+                PDU_debug_data[7] = (ic == 0) ? PDU_getData_i.sht30_error : 0;
+            }
+            else if (db_index < PDU_debugData_frameCount())    // cell voltages, 3 cells per frame
             {
                 frame_no = db_index - DEBUG_FIXED_FRAME_COUNT;
                 cell_no = frame_no * DEBUG_CELLS_PER_FRAME;

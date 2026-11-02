@@ -252,9 +252,12 @@
 /*
  * debug data (0x69) - frames 0..1 fixed, then 3 cell voltages + 1 temperature per frame
  */
-#define DEBUG_FIXED_FRAME_COUNT     2                           // index 0..1, slave humidity / temperature / open wire
-#define DEBUG_CELLS_PER_FRAME       3                           // index 2..
-#define DEBUG_TEMPS_PER_FRAME       1                           // index 2..
+#define DEBUG_LAYOUT_FRAME          0                                               // index 0 = IC count / cell count / temperature count
+#define DEBUG_SLAVE_FRAME_FIRST     1                                               // index 1..TOTAL_IC, slave humidity / temperature / open wire
+#define DEBUG_SLAVE_FRAME_COUNT     TOTAL_IC
+#define DEBUG_FIXED_FRAME_COUNT     (DEBUG_SLAVE_FRAME_FIRST + DEBUG_SLAVE_FRAME_COUNT) // layout + IC frames
+#define DEBUG_CELLS_PER_FRAME       3                                               // index TOTAL_IC + 1..
+#define DEBUG_TEMPS_PER_FRAME       1                                               // index TOTAL_IC + 1..
 #define DEBUG_CELL_COUNT            SERIES_CELLS                // series cells, unused positions (CELL_UNUSED) skipped
 #define DEBUG_TEMP_COUNT            (TOTAL_IC * TEMP_PER_IC)
 #define DEBUG_CELL_V_INVALID        0xFFFF                      // no cell at this position

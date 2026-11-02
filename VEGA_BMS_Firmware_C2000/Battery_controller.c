@@ -353,6 +353,8 @@ void main(void)
     init_pack_number();
     init_fw_update_date();
 
+    PDU_debugData_init();
+
 #if (GBT_CHARGING == 1)
     GBT_Data_init();
 #endif
@@ -2399,12 +2401,7 @@ void timer_task_can()
 
     if (debug_CMD)
     {
-         /* fixed frames (slave humidity / temperature / open wire) only when they are read */
-         if (!(slave_read.bit.sht30_read_enable_flag || slave_read.bit.open_wire_read_enable_flag)
-             && (debugData_index < DEBUG_FIXED_FRAME_COUNT))
-         {
-             debugData_index = DEBUG_FIXED_FRAME_COUNT;
-         }
+         /* all frames: layout, slave ICs, cell voltages / temperatures */
          PDU_debugData_write(debugData_index++, canMap.msg[CAN_OBJ_14].sendData);
          CAN_sendMessage(CAN_OBJ_14, NOMINAL_DLC, canMap.msg[CAN_OBJ_14].sendData);
          if (debugData_index >= PDU_debugData_frameCount())
@@ -2976,6 +2973,7 @@ void contactor_operator()
                         bms_opMode = fast_charging;
                         con_fb_try_count_fc = 0;
                         PDU_getData_local.fixSetChrg.bit.fc_contactor_error = 0;
+                        fc_contactor_error_flag = 0;
                     }
                 }
                 break;
