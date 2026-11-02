@@ -25,38 +25,38 @@ extern struct ECAN_REGS ECanaShadow;
 //CAN Mailbox Object ID
 typedef enum
 {
-    CAN_OBJ_0,
-    CAN_OBJ_1,
-    CAN_OBJ_2,
-    CAN_OBJ_3, //ota_flag
-    CAN_OBJ_4, //ota_response
-    CAN_OBJ_5,
-    CAN_OBJ_6,
-    CAN_OBJ_7,
-    CAN_OBJ_8,
-    CAN_OBJ_9,
-    CAN_OBJ_10,
-    CAN_OBJ_11, //evcc
-    CAN_OBJ_12, //bms_cmd
-    CAN_OBJ_13,
-    CAN_OBJ_14, //bms_debug_69
-    CAN_OBJ_15, //bms_can_data
-    CAN_OBJ_16, //evcu
-    CAN_OBJ_17, //get_slave_rx
-    CAN_OBJ_18, //set_slave_tx
-    CAN_OBJ_19, //chiller_rx
-    CAN_OBJ_20, //chiller_tx
-    CAN_OBJ_21,
-    CAN_OBJ_22, // GBT Protocol Tx
-    CAN_OBJ_23,
-    CAN_OBJ_24,
-    CAN_OBJ_25,
-    CAN_OBJ_26,
-    CAN_OBJ_27,
-    CAN_OBJ_28,
-    CAN_OBJ_29,
-    CAN_OBJ_30,
-    CAN_OBJ_31
+    CAN_OBJ_0,      // unused
+    CAN_OBJ_1,      // unused
+    CAN_OBJ_2,      // unused
+    CAN_OBJ_3,      // RX  OTA_FLAG_ADDR          0x17B84 (ext) - OTA handshake / reset command
+    CAN_OBJ_4,      // TX  OTA_RESPONSE_ADDR      0x67B84 (ext) - OTA acknowledge
+    CAN_OBJ_5,      // unused
+    CAN_OBJ_6,      // unused
+    CAN_OBJ_7,      // unused
+    CAN_OBJ_8,      // unused
+    CAN_OBJ_9,      // TX  EEPROM_BROADCAST_ADDR  0x35  - EEPROM config broadcast, pages 1..5
+    CAN_OBJ_10,     // unused
+    CAN_OBJ_11,     // RX  EVCC_ADDR              0x62  - EVCC flags (charger type, FC contactor, GB/T setup request)
+    CAN_OBJ_12,     // RX  BMS_CMD_ADDR           0xDB  - debug / test commands (debug_CMD, SOC reset, chiller test ...)
+    CAN_OBJ_13,     // unused
+    CAN_OBJ_14,     // TX  BMS_DEBUG_ADDR         0x69  - debug data (debug_CMD set) / charged energy
+    CAN_OBJ_15,     // TX  BMS_CAN_DATA_ADDR      0x32  - BMS status to EVCU, pages 0..3
+    CAN_OBJ_16,     // RX  EVCU_ADDR              0x31  - EVCU commands (state, contactor on/off)
+    CAN_OBJ_17,     // RX  GET_SLAVE_ADDR         0x30  - slave BMS data to master
+    CAN_OBJ_18,     // TX  SET_SLAVE_ADDR         0x29  - master commands to slave BMS
+    CAN_OBJ_19,     // RX  CHILLER_RX_ADDR        0x248 - chiller feedback
+    CAN_OBJ_20,     // TX  CHILLER_TX_ADDR        0x238 - chiller command
+    CAN_OBJ_21,     // RX  EVCU_ODO_ADDR          0x41  - EVCU odometer value
+    CAN_OBJ_22,     // TX  GBT_PROTOCOL_DATA      0x38  - GB/T charging data to EVCC (GBT_CHARGING == 1)
+    CAN_OBJ_23,     // unused
+    CAN_OBJ_24,     // TX  PUMP_TX_ADDR           0x258 - pump command, duty + on/off (CAN_PUMP)
+    CAN_OBJ_25,     // RX  PUMP_RX_ADDR           0x268 - pump feedback, speed/temp/V/I/fault (CAN_PUMP)
+    CAN_OBJ_26,     // RX  SET_CHG_ENERGY         0xEC  - reset charged energy
+    CAN_OBJ_27,     // RX  BMS_CONFIG_UPDATE_ADDR 0xED  - EEPROM parameter update (capacity, limits, pack no., date)
+    CAN_OBJ_28,     // unused
+    CAN_OBJ_29,     // unused
+    CAN_OBJ_30,     // unused
+    CAN_OBJ_31      // unused
 }Mbox_obj_id_val;
 
 //Mailbox direction configuration

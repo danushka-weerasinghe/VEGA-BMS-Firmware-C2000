@@ -673,6 +673,13 @@ void ECAN_CONFIG()
     CAN_setupMessageObject(CAN_OBJ_22, GBT_PROTOCOL_DATA, NOMINAL_DLC,
                            TX_DIR, STD_FRAME);
 #endif
+#if defined(CAN_PUMP)
+CAN_setupMessageObject(CAN_OBJ_24, PUMP_TX_ADDR, NOMINAL_DLC,
+                               TX_DIR, STD_FRAME);
+CAN_setupMessageObject(CAN_OBJ_25, PUMP_RX_ADDR, NOMINAL_DLC,
+                               RX_DIR, STD_FRAME);
+#endif
+
     CAN_setupMessageObject(CAN_OBJ_26, SET_CHG_ENERGY, NOMINAL_DLC,
                            RX_DIR, STD_FRAME);
     CAN_setupMessageObject(CAN_OBJ_27, BMS_CONFIG_UPDATE_ADDR, NOMINAL_DLC,
@@ -893,6 +900,12 @@ __interrupt void ecan1_inta_isr()
             PDU_setData_read_ODO(canMap.msg[CAN_OBJ_21].readData);
             chiller_rec_count++;
             break;
+    #if defined(CAN_PUMP)
+        case CAN_OBJ_25:
+            CAN_readMessage(CAN_OBJ_25, canMap.msg[CAN_OBJ_25].readData);
+            pumpData_read(canMap.msg[CAN_OBJ_25].readData);
+            break;
+    #endif
         case CAN_OBJ_26:
             CAN_readMessage(CAN_OBJ_26, canMap.msg[CAN_OBJ_26].readData);
             reset_chg_energy(canMap.msg[CAN_OBJ_26].readData);
@@ -3620,6 +3633,7 @@ void contactor_operator_fire()
                         con_fb_try_count = 0;
                     }
                 }
+                break;
 
 #if (FC_CONTACTOR == 1)
             case 4:

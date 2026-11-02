@@ -104,6 +104,10 @@ Uint8 CAN_getInterruptCause()
     {
         status = CAN_OBJ_21;
     }
+    if (ECanaRegs.CANRMP.bit.RMP25)
+    {
+        status = CAN_OBJ_25;
+    }
     if (ECanaRegs.CANRMP.bit.RMP26)
     {
         status = CAN_OBJ_26;
@@ -1491,7 +1495,7 @@ void CAN_sendMessage(Mbox_obj_id_val objID, Uint16 msgLen, Uint16 *msgData)
         ECanaMboxes.MBOX13.MDH.byte.BYTE6 = msgData[6];
         ECanaMboxes.MBOX13.MDH.byte.BYTE7 = msgData[7];
         ECanaShadow.CANTRS.all = 0;
-        ECanaShadow.CANTRS.bit.TRS11 = 1;
+        ECanaShadow.CANTRS.bit.TRS13 = 1;
         break;
     case CAN_OBJ_14:
         ECanaMboxes.MBOX14.MDL.byte.BYTE0 = msgData[0];
@@ -1611,7 +1615,7 @@ void CAN_sendMessage(Mbox_obj_id_val objID, Uint16 msgLen, Uint16 *msgData)
         ECanaMboxes.MBOX23.MDH.byte.BYTE6 = msgData[6];
         ECanaMboxes.MBOX23.MDH.byte.BYTE7 = msgData[7];
         ECanaShadow.CANTRS.all = 0;
-        ECanaShadow.CANTRS.bit.TRS21 = 1;
+        ECanaShadow.CANTRS.bit.TRS23 = 1;
         break;
     case CAN_OBJ_24:
         ECanaMboxes.MBOX24.MDL.byte.BYTE0 = msgData[0];
