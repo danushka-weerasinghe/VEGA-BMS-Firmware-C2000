@@ -9,6 +9,7 @@
 #include "main_data.h"
 #include <BMS_I2C.h>
 #include "BMS_controller_CAN.h"
+#include "PDU_matrix.h"     /* PDU_getData_local.charged_energy_acc (Wh) */
 
 
 // ---------------------------------------------------------
@@ -26,6 +27,9 @@
 #define DEFAULT_DISCHARGE_LIMIT   15000   // 150 Amps
 #define DEFAULT_SC_LIMIT          19000   // 190 Amps
 
+#define CALIB_NOMINAL_V    108.0f     /* pack nominal voltage: ETX 12 kWh 30S NMC = 30 x 3.6 V           */
+                                     /* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
+
 #elif defined(BIKE_2_MODULE_TENPOWER)
 
 #define MIN_NOMINAL_CAPACITY      10
@@ -36,6 +40,9 @@
 #define DEFAULT_CHARGE_LIMIT     -15000  // -150 Amps
 #define DEFAULT_DISCHARGE_LIMIT   29000   // 150 Amps
 #define DEFAULT_SC_LIMIT          30000   // 190 Amps
+
+#define CALIB_NOMINAL_V    72.0f     /* pack nominal voltage: ETX 12 kWh 20S NMC = 20 x 3.6 V           */
+                                     /* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
 
 #elif defined(BIKE_3_MODULE_MOLICELL)
 
@@ -48,6 +55,9 @@
 #define DEFAULT_DISCHARGE_LIMIT   15000   // 150 Amps
 #define DEFAULT_SC_LIMIT          19000   // 190 Amps
 
+#define CALIB_NOMINAL_V    75.6f     /* pack nominal voltage: ETX 12 kWh 21S NCA = 21 x 3.6 V           */
+                                     /* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
+
 #elif defined(BIKE_3_MODULE_TENPOWER)
 
 #define MIN_NOMINAL_CAPACITY      10
@@ -58,6 +68,9 @@
 #define DEFAULT_CHARGE_LIMIT     -15000  // -150 Amps
 #define DEFAULT_DISCHARGE_LIMIT   15000   // 150 Amps
 #define DEFAULT_SC_LIMIT          19000   // 190 Amps
+
+#define CALIB_NOMINAL_V    108.0f     /* pack nominal voltage: ETX 12 kWh 30S NMC = 30 x 3.6 V           */
+                                     /* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
 
 #elif defined(ETX_7_kWH)
 
@@ -70,6 +83,9 @@
 #define DEFAULT_DISCHARGE_LIMIT   10000   // 150 Amps
 #define DEFAULT_SC_LIMIT          11000   // 190 Amps
 
+#define CALIB_NOMINAL_V    70.4f     /* pack nominal voltage: ETX 12 kWh 22S LFP = 22 x 3.2 V           */
+                                     /* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
+
 #elif defined(ETX_10_kWH)
 
 #define MIN_NOMINAL_CAPACITY      10
@@ -81,6 +97,10 @@
 #define DEFAULT_DISCHARGE_LIMIT   15000   // 150 Amps
 #define DEFAULT_SC_LIMIT          19000   // 190 Amps
 
+
+#define CALIB_NOMINAL_V    73.6f     /* pack nominal voltage: ETX 10 kWh 23S LFP = 23 x 3.2 V           */
+                                     /* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
+
 #elif defined(ETX_12_kWH)
 
 #define MIN_NOMINAL_CAPACITY      10
@@ -91,6 +111,9 @@
 #define DEFAULT_CHARGE_LIMIT     -19000  // -190 Amps
 #define DEFAULT_DISCHARGE_LIMIT   17100   // 171 Ah
 #define DEFAULT_SC_LIMIT          20000   // 200 Amps
+
+#define CALIB_NOMINAL_V    69.52f     /* pack nominal voltage: ETX 12 kWh 22S LFP = 22 x 3.16 V           */
+                                     /* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
 
 #endif
 
@@ -117,6 +140,15 @@
 #define DEFAULT_DATE_YEAR   0x00
 #define DEFAULT_DATE_MONTH  0x00
 #define DEFAULT_DATE_DAY    0x00
+
+#define REC_LEN  6                   /* 4 bytes value (little-endian) + 2 bytes CRC-16 */
+
+static Uint8  addr_main[2]   = {0x01, 0x70};   /* free: after the FW-update date at 0x0168 */
+static Uint8  addr_backup[2] = {0x01, 0x78};
+
+static Uint32 snapshot_wh  = 0;      /* charged_energy_acc at the last full charge */
+static Uint8  save_pending = 0;
+static Uint8  main_written = 0;
 
 Uint8  pack_year   = DEFAULT_PACK_YEAR;
 Uint8  pack_month  = DEFAULT_PACK_MONTH;
@@ -495,8 +527,8 @@ void broadcast_eeprom_data_over_can(void)
         canMap.msg[CAN_OBJ_9].sendData[3] = (nominal_capacity >> 16) & 0xFF;
         canMap.msg[CAN_OBJ_9].sendData[4] = (nominal_capacity >> 24) & 0xFF;
 
-        canMap.msg[CAN_OBJ_9].sendData[5] = 0x00;
-        canMap.msg[CAN_OBJ_9].sendData[6] = 0x00;
+        canMap.msg[CAN_OBJ_9].sendData[5] = calib_flags();             // bit0 = full charge needed
+        canMap.msg[CAN_OBJ_9].sendData[6] = calib_cycles_since_full(); // optional, otherwise leave 0x00
         canMap.msg[CAN_OBJ_9].sendData[7] = capacity_health_status;
 
         mux_state = 2;
@@ -579,4 +611,145 @@ void broadcast_eeprom_data_over_can(void)
     }
 
     CAN_sendMessage(CAN_OBJ_9, NOMINAL_DLC, canMap.msg[CAN_OBJ_9].sendData);
+}
+
+/*
+ * calibrate the Battery Management System (BMS) via full Charge
+ */
+
+static Uint32 acc_wh(void)
+{
+    return PDU_getData_local.charged_energy_acc;
+}
+
+static Uint32 pack_wh(void)          /* one pack-equivalent of energy, Wh */
+{
+    return (Uint32)((float)nominal_capacity * CALIB_NOMINAL_V);
+}
+
+static Uint32 wh_since_full(void)
+{
+    Uint32 acc = acc_wh();
+    if (acc < snapshot_wh)           /* accumulated energy was reset (0xEC command): start again */
+    {
+        snapshot_wh = acc;
+        save_pending = 1;
+    }
+    return acc - snapshot_wh;
+}
+
+
+/* CRC-16/CCITT-FALSE: poly 0x1021, init 0xFFFF. On C28x a Uint8 is 16 bits wide, so every
+   byte is masked to 8 bits. */
+static Uint16 crc16(const Uint8 *d, Uint16 n)
+{
+    Uint16 crc = 0xFFFF;
+    Uint16 i, k;
+    for (i = 0; i < n; i++)
+    {
+        crc ^= (Uint16)(d[i] & 0xFF) << 8;
+        for (k = 0; k < 8; k++)
+        {
+            crc = (crc & 0x8000) ? (Uint16)((crc << 1) ^ 0x1021) : (Uint16)(crc << 1);
+        }
+    }
+    return crc;
+}
+
+/* returns 1 and the value if the record is readable and its CRC matches, else 0 */
+static Uint8 rd_rec(Uint8 *addr, Uint32 *v)
+{
+    Uint8 b[REC_LEN] = {0, 0, 0, 0, 0, 0};
+    Uint16 i, stored;
+    if (I2CA_ReadFromManyRegs(EEPROM_ADDR, &addr[EEP_ADDR_LOC], EEP_ADDR_LENGTH, b, REC_LEN) != 0)
+    {
+        return 0;                                             /* I2C read failed */
+    }
+    for (i = 0; i < REC_LEN; i++) b[i] &= 0xFF;
+    stored = (Uint16)b[4] | ((Uint16)b[5] << 8);
+    if (stored != crc16(b, 4))
+    {
+        return 0;                                             /* blank (0xFF..), torn or corrupt */
+    }
+    *v = (Uint32)b[0] | ((Uint32)b[1] << 8) | ((Uint32)b[2] << 16) | ((Uint32)b[3] << 24);
+    return 1;
+}
+
+static void wr_rec(Uint8 *addr, Uint32 v)
+{
+    Uint8 b[REC_LEN];
+    Uint16 crc;
+    b[0] = v & 0xFF;
+    b[1] = (v >> 8) & 0xFF;
+    b[2] = (v >> 16) & 0xFF;
+    b[3] = (v >> 24) & 0xFF;
+    crc = crc16(b, 4);
+    b[4] = crc & 0xFF;
+    b[5] = (crc >> 8) & 0xFF;
+    I2CA_WriteToManyRegs(EEPROM_ADDR, &addr[EEP_ADDR_LOC], EEP_ADDR_LENGTH, b, REC_LEN);
+}
+
+void calib_init(void)
+{
+    Uint32 m = 0, b = 0;
+    Uint8  m_ok = rd_rec(addr_main, &m);
+    Uint8  b_ok = rd_rec(addr_backup, &b);
+
+    if (m_ok)                                 /* main is written first, so it is the newer one */
+    {
+        snapshot_wh = m;
+        if (!b_ok || b != m) save_pending = 1;    /* repair / align the backup                 */
+    }
+    else if (b_ok)                            /* main blank or corrupt: use backup, repair main */
+    {
+        snapshot_wh = b;
+        save_pending = 1;
+    }
+    else                                      /* both blank/corrupt: first start with this FW  */
+    {
+        snapshot_wh = acc_wh();               /* count from now, no reminder straight away     */
+        save_pending = 1;
+    }
+    if (snapshot_wh > acc_wh())               /* corrupt, or energy counter was reset          */
+    {
+        snapshot_wh = acc_wh();
+        save_pending = 1;
+    }
+}
+
+void calib_full_charge_done(void)
+{
+    snapshot_wh = acc_wh();
+    save_pending = 1;
+}
+
+void calib_save_step(Uint8 step)
+{
+    if (step == 0)
+    {
+        main_written = 0;
+        if (save_pending)
+        {
+            wr_rec(addr_main, snapshot_wh);
+            main_written = 1;
+        }
+    }
+    else if (main_written)               /* backup only after main, 100 ms apart (EEPROM write time) */
+    {
+        wr_rec(addr_backup, snapshot_wh);
+        save_pending = 0;
+        main_written = 0;
+    }
+}
+
+Uint8 calib_flags(void)
+{
+    return (wh_since_full() >= CALIB_DUE_CYCLES * pack_wh()) ? CALIB_FLAG_FULL_CHARGE_DUE : 0x00;
+}
+
+Uint8 calib_cycles_since_full(void)
+{
+    Uint32 p = pack_wh();
+    Uint32 c = (p > 0) ? wh_since_full() / p : 0;
+    return (c > 255UL) ? 255 : (Uint8)c;
 }

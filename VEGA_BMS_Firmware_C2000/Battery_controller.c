@@ -356,6 +356,7 @@ void main(void)
     init_current_limits();
     init_pack_number();
     init_fw_update_date();
+    calib_init();          /* after init_charge_energy() and init_nominal_capacity() */
 #if defined(ETX_10_kWH)
     soc_err_init(&soc_err, &SOC_ERR_CFG_ETX10_LFP_REPT135);
     soc_err_last_tick = CpuTimer0.InterruptCount;
