@@ -181,9 +181,9 @@ BO_ 56 gbtData: 8 Vector__XXX
  SG_ GBT_BmsTempState m3 : 54|2@1+ (1,0) [0|3] "" Vector__XXX
  SG_ GBT_FcContactorState m3 : 56|2@1+ (1,0) [0|3] "" Vector__XXX
  SG_ GBT_LowestCellID m4 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ GBT_CellCount m4 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ GBT_TempProbeCount m4 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ GBT_HighestCellID m4 : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ GBT_CellCount m2 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ GBT_TempProbeCount m2 : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ GBT_HighestCellID m4 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
  SG_ GBT_V_Cell_01 m5 : 8|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
  SG_ GBT_V_Cell_02 m5 : 24|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX
  SG_ GBT_V_Cell_03 m5 : 40|16@1+ (0.01,0) [0|655.35] "V" Vector__XXX

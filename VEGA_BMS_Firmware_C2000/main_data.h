@@ -33,7 +33,6 @@
 //#define J_TAG_BOOTLOADING
 #define CAN_BOOTLOADING
 
-#define EVCU_ACTIVE
 
 // ---- Select ONE Battery Pack ----
 
@@ -50,6 +49,7 @@
 
 #if defined(ATV_3_MODULE)
 
+#define EVCU_ACTIVE
 #define CELL_CHEM_NMC
 #define CAN_BAUD_RATE_KBPS      250
 #define TOTAL_IC                3 //max 16
@@ -67,11 +67,14 @@
 #define GBT_CHARGING            1
 #define shunt_CS
 //#define recovery_CS
+//#define CAN_CHILLER
+//#define SCI_CHILLER
+//#define CAN_PUMP
+//#define PWM_PUMP
 
-#elif defined(BIKE_2_MODULE_TENPOWER)
+#elif defined(BIKE_2_MODULE_TENPOWER)   // Cell Arrangment 10S 20P - Ten Power Cells - 2 Module per pack
 
-// Cell Arrangment 10S 20P - Ten Power Cells - 2 Module per pack
-
+#define EVCU_ACTIVE
 #define CELL_CHEM_NMC
 #define CAN_BAUD_RATE_KBPS      500
 #define TOTAL_IC                2 //max 16
@@ -89,11 +92,14 @@
 #define GBT_CHARGING            1
 #define shunt_CS
 //#define recovery_CS
+//#define CAN_CHILLER
+//#define SCI_CHILLER
+//#define CAN_PUMP
+//#define PWM_PUMP
 
-#elif defined(BIKE_3_MODULE_MOLICELL)
+#elif defined(BIKE_3_MODULE_MOLICELL)   // Cell Arrangment 7S 29P - Ten Power - 3 Module per pack
 
-// Cell Arrangment 7S 29P - Ten Power - 3 Module per pack
-
+#define EVCU_ACTIVE
 #define CELL_CHEM_NMC
 #define CAN_BAUD_RATE_KBPS      250
 #define TOTAL_IC                3 //max 16
@@ -111,11 +117,14 @@
 #define GBT_CHARGING            1
 #define shunt_CS
 //#define recovery_CS
+//#define CAN_CHILLER
+//#define SCI_CHILLER
+//#define CAN_PUMP
+//#define PWM_PUMP
 
-#elif defined(BIKE_3_MODULE_TENPOWER)
+#elif defined(BIKE_3_MODULE_TENPOWER)       // Cell Arrangment 7S 29P - Ten Power - 3 Module per pack
 
-// Cell Arrangment 7S 29P - Ten Power - 3 Module per pack
-
+#define EVCU_ACTIVE
 #define CELL_CHEM_NMC
 #define CAN_BAUD_RATE_KBPS      250
 #define TOTAL_IC                3 //max 16
@@ -133,11 +142,15 @@
 #define GBT_CHARGING            1
 #define shunt_CS
 //#define RS485_current_sensor
+//#define CAN_CHILLER
+//#define SCI_CHILLER
+//#define CAN_PUMP
+//#define PWM_PUMP
 
-#elif defined(ETX_7_kWH)
+#elif defined(ETX_7_kWH)        // Cell Arrangment 22S 1P - EVE Cells - 11 cell Per each IC
 
-// Cell Arrangment 22S 1P - EVE Cells - 11 cell Per each IC
 
+#define EVCU_ACTIVE
 #define CELL_CHEM_LFP
 #define CAN_BAUD_RATE_KBPS      250
 #define TOTAL_IC                2 //max 16
@@ -158,8 +171,9 @@
 //#define CAN_CHILLER
 //#define SCI_CHILLER
 
-#elif defined(ETX_10_kWH)
+#elif defined(ETX_10_kWH)       // Cell Arrangment 22S 1P - REPT Cells - 11 cell Per each IC
 
+#define EVCU_ACTIVE
 #define CELL_CHEM_LFP
 #define CAN_BAUD_RATE_KBPS      250
 #define TOTAL_IC                2 //max 16
@@ -183,8 +197,9 @@
 //#define CAN_PUMP
 #define PWM_PUMP
 
-#elif defined(ETX_12_kWH)
+#elif defined(ETX_12_kWH)       // Cell Arrangment 22S 1P - REPT Cells - 11 cell Per each IC
 
+#define EVCU_ACTIVE
 #define CELL_CHEM_LFP
 #define CAN_BAUD_RATE_KBPS      250
 #define TOTAL_IC                2 //max 16
@@ -226,9 +241,15 @@
 #define PRECHARGE_DELAY         40
 #define GBT_CHARGING            0
 #define shunt_CS
+//#define recovery_CS
+//#define CAN_CHILLER
+//#define SCI_CHILLER
+//#define CAN_PUMP
+//#define PWM_PUMP
 
-#elif defined(SMALL_CAR)
+#elif defined(SMALL_CAR)        // Cell Arrangment 96S 1P - REPT Cells - 11=2 cell Per each IC
 
+#define EVCU_ACTIVE
 #define CELL_CHEM_LFP
 #define CAN_BAUD_RATE_KBPS      500
 #define TOTAL_IC                8 //max 16
@@ -245,7 +266,11 @@
 #define PRECHARGE_DELAY         30
 #define GBT_CHARGING            0
 #define CAN_current_sensor
-/*Define chiller*/
+//#define recovery_CS
+//#define CAN_CHILLER
+//#define SCI_CHILLER
+//#define CAN_PUMP
+//#define PWM_PUMP
 
 #endif
 

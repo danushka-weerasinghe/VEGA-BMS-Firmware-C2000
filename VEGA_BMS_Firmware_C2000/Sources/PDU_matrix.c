@@ -151,8 +151,8 @@ void PDU_gbt_Data_write(uint16_t GBT_Data_index, Uint16* PDU_gbt_Data)
     case 2:
         PDU_gbt_Data[1] = GBT_Data_i.max_charge_current;
         PDU_gbt_Data[2] = GBT_Data_i.max_charge_current >> 8;
-        PDU_gbt_Data[3] = 0;
-        PDU_gbt_Data[4] = 0;
+        PDU_gbt_Data[3] = GBT_Data_i.cell_count;            // series cells in the pack (SERIES_CELLS)
+        PDU_gbt_Data[4] = GBT_Data_i.temp_count;            // temperature probes (TOTAL_IC * TEMP_PER_IC)
         PDU_gbt_Data[5] = 0;
         PDU_gbt_Data[6] = 0;
         PDU_gbt_Data[7] = 0;
@@ -171,9 +171,9 @@ void PDU_gbt_Data_write(uint16_t GBT_Data_index, Uint16* PDU_gbt_Data)
 
     case 4:
         PDU_gbt_Data[1] = GBT_Data_i.lowest_cell_id;
-        PDU_gbt_Data[2] = GBT_Data_i.cell_count;            // series cells in the pack (SERIES_CELLS)
-        PDU_gbt_Data[3] = GBT_Data_i.temp_count;            // temperature probes (TOTAL_IC * TEMP_PER_IC)
-        PDU_gbt_Data[4] = GBT_Data_i.highest_cell_id;
+        PDU_gbt_Data[2] = GBT_Data_i.highest_cell_id;
+        PDU_gbt_Data[3] = 0;
+        PDU_gbt_Data[4] = 0;
         PDU_gbt_Data[5] = 0;
         PDU_gbt_Data[6] = 0;
         PDU_gbt_Data[7] = 0;
