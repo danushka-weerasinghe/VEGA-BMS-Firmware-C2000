@@ -29,6 +29,7 @@
 #include <eprom_config.h>
 #include <Pump_PWM.h>
 #include "GBT_data.h"
+#include <soc_error_check.h>
 
 Uint16 count;
 
@@ -195,6 +196,10 @@ Uint8 soc_soh_flag = 0;
 uint16_t contactor_init_flag = 0;
 Uint8 charge_state = 2; /*0 = Charging not complete, 1 = charge complete, 2 = not initialized*/
 Uint16 SOC_estimation_error_delay = 0; // SOC estimation error delaying for sudden acceleration
+#if defined(ETX_10_kWH)
+static soc_err_t soc_err;              /* NEW: SOC estimation error check state */
+static Uint32    soc_err_last_tick = 0;/* NEW: CpuTimer0 tick of the last update  */
+#endif
 
 unsigned char SPI_receiver_state = 0;
 unsigned char SPI_rec_error = 0;
@@ -352,6 +357,11 @@ void main(void)
     init_current_limits();
     init_pack_number();
     init_fw_update_date();
+    calib_init();          /* after init_charge_energy() and init_nominal_capacity() */
+#if defined(ETX_10_kWH)
+    soc_err_init(&soc_err, &SOC_ERR_CFG_ETX10_LFP_REPT135);
+    soc_err_last_tick = CpuTimer0.InterruptCount;
+#endif
 
     PDU_debugData_init();
 
@@ -460,6 +470,26 @@ void main(void)
 
                 soc_soh_flag = 0;
 
+
+#if defined(ETX_10_kWH)
+                { /* SOC estimation error check (model-compensated) */
+                    Uint32 now = CpuTimer0.InterruptCount; /* +1 every 50 ms */
+                    float dt_s = (float) (now - soc_err_last_tick) * 0.05f;
+                    soc_err_last_tick = now;
+                    if (dt_s > 5.0f)
+                    {
+                        dt_s = 5.0f;
+                    } /* start-up guard */
+
+                    soc_err_update(
+                            &soc_err, (float) Current_value * 0.01f, /* A, discharge + */
+                            Controller.lowest_cell_volt, /* 0.1 mV */
+                            Controller.SOC_value, /* % */
+                            dt_s,
+                            (PDU_setData_local.fixSetS.bit.EVCU_State == 4));
+                }
+#endif
+
                 if (PDU_setData_local.fixSetS.bit.EVCU_State == 4) /*Charging*/
                 {
                     charge_ctrl(Controller.highest_cell_volt, Current_value, Controller.SOC_value);
@@ -479,28 +509,27 @@ void main(void)
                     reset_charge_session();
 
                     // SOC Estimation error compare with voltage; if the min cell voltage is less than 3.15 and SOC is above 20%
+#if defined(ETX_10_kWH)
+                    PDU_getData_local.fixSetG.bit.soc_estimation_error = soc_err_get_error(&soc_err);
+#else
+                    /* other vehicles: original logic, unchanged */
                     if (Controller.lowest_cell_volt < SOC_ESTIMATION_ERROR_BASE_VALUE && Controller.SOC_value > 20 && !PDU_getData_local.fixSetG.bit.soc_estimation_error)
                     {
-                        if(SOC_estimation_error_delay>200)
-
+                        if (SOC_estimation_error_delay > 200)
                         {
                             PDU_getData_local.fixSetG.bit.soc_estimation_error = 1;
                             SOC_estimation_error_delay = 0;
                         }
-
                         else
                         {
-
                             SOC_estimation_error_delay++;
-
                         }
-
                     }
                     else
                     {
                         SOC_estimation_error_delay = 0;
-
                     }
+#endif
 
                 }
 

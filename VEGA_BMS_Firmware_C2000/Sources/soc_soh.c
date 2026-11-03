@@ -1062,6 +1062,8 @@ void soc_calc_new(double current_value, unsigned int max_cell_voltage, unsigned 
                     pending_backup_save = 1;
 
                     charge_complete = 2;
+
+                    calib_full_charge_done();
                 }
             }
             else if(PDU_getData_local.fixSetChrg.bit.cv_mode == 0)
@@ -1071,6 +1073,9 @@ void soc_calc_new(double current_value, unsigned int max_cell_voltage, unsigned 
 
             soc_count++;
             break;
+
+        case 20: calib_save_step(0); soc_count++; break;   // snapshot, main   0x0170
+        case 22: calib_save_step(1); soc_count++; break;   // snapshot, backup 0x0178
 
         case 100:
             soc_count = 0;
