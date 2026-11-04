@@ -3786,7 +3786,8 @@ int16 Mcu_Temp(void)
 uint16_t chiller_status = 0;
 uint16_t pump_speed = 0;
 
-#define PUMP_PRE_RUN_TICKS      100     // pump runs 5 s before the chiller starts (CpuTimer0 tick = 50 ms)
+#define PUMP_PRE_RUN_TICKS      200     // pump runs 10 s before the chiller starts (CpuTimer0 tick = 50 ms)
+#define PUMP_POST_RUN_TICKS     200     // pump keeps running 10 s after the chiller stops (CpuTimer0 tick = 50 ms)
 
 #if defined(CAN_PUMP)
 #define PUMP_OK()               pump_feedback_ok()      // 0x268 feedback: running, no fault, not lost
@@ -3809,9 +3810,13 @@ void chillerCtrl(uint16_t highestT)
 {
     static uint16_t pump_started = 0;       // 1 = pump is running for cooling
     static Uint32 pump_start_tick = 0;      // CpuTimer0 tick when the pump was started
+    static uint16_t pump_stopping = 0;      // 1 = chiller is off, pump still running for PUMP_POST_RUN_TICKS
+    static Uint32 chiller_stop_tick = 0;    // CpuTimer0 tick when the chiller was switched off
 
     if ((highestT > 33) || chiller_test)       // chiller_test (0xDB byte 2): 1 = force ON, 0 = auto (temperature)
     {
+        pump_stopping = 0;
+
         /* 1. start the pump first */
         if (!pump_started)
         {
@@ -3831,7 +3836,7 @@ void chillerCtrl(uint16_t highestT)
 #endif
         chiller_status = 1;
 
-        /* 2. start the chiller after the pump has run for 5 s (CAN pump: and the pump feedback is OK) */
+        /* 2. start the chiller after the pump has run for 10 s (CAN pump: and the pump feedback is OK) */
         if (((CpuTimer0.InterruptCount - pump_start_tick) >= PUMP_PRE_RUN_TICKS) && PUMP_OK())
         {
 #if defined(SCI_CHILLER)
@@ -3849,22 +3854,35 @@ void chillerCtrl(uint16_t highestT)
     }
     else if (highestT < 33)
     {
-        PDU_getData_local.fixSetChrg.bit.chiller_enable = 0;
-        chiller_status = 0;
+        /* 1. chiller off now */
+        if (chiller_status)     // cooling was on: start the pump run-on time
+        {
+            chiller_status = 0;
+            pump_stopping = 1;
+            chiller_stop_tick = CpuTimer0.InterruptCount;
+        }
+        chiller_stop();         // chiller_enable = 0, chiller OFF frame
         pump_started = 0;
-        pump_speed = 0;
-        InitEPwmTimer(pump_speed);
 
-#if defined(CAN_CHILLER)
-        chillerData_write(canMap.msg[CAN_OBJ_20].sendData, 0);
-        CAN_sendMessage(CAN_OBJ_20, NOMINAL_DLC, canMap.msg[CAN_OBJ_20].sendData);
+        /* 2. pump off 10 s after the chiller */
+        if (pump_stopping && ((CpuTimer0.InterruptCount - chiller_stop_tick) < PUMP_POST_RUN_TICKS))
+        {
+#if defined(CAN_PUMP)
+            pumpData_write(canMap.msg[CAN_OBJ_24].sendData, ON);     // PWM pump: keeps running at pump_speed
+            CAN_sendMessage(CAN_OBJ_24, NOMINAL_DLC, canMap.msg[CAN_OBJ_24].sendData);
 #endif
+        }
+        else
+        {
+            pump_stopping = 0;
+            pump_speed = 0;
+            InitEPwmTimer(pump_speed);
 
 #if defined(CAN_PUMP)
-        pumpData_write(canMap.msg[CAN_OBJ_24].sendData, OFF);
-        CAN_sendMessage(CAN_OBJ_24, NOMINAL_DLC, canMap.msg[CAN_OBJ_24].sendData);
+            pumpData_write(canMap.msg[CAN_OBJ_24].sendData, OFF);
+            CAN_sendMessage(CAN_OBJ_24, NOMINAL_DLC, canMap.msg[CAN_OBJ_24].sendData);
 #endif
-
+        }
     }
     else if (chiller_status)
     {
@@ -3873,7 +3891,7 @@ void chillerCtrl(uint16_t highestT)
         CAN_sendMessage(CAN_OBJ_24, NOMINAL_DLC, canMap.msg[CAN_OBJ_24].sendData);
 #endif
 
-        /* chiller only after the pump has run for 5 s (CAN pump: and the pump feedback is OK) */
+        /* chiller only after the pump has run for 10 s (CAN pump: and the pump feedback is OK) */
         if (((CpuTimer0.InterruptCount - pump_start_tick) >= PUMP_PRE_RUN_TICKS) && PUMP_OK())
         {
 #if defined(SCI_CHILLER)
