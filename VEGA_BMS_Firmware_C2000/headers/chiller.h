@@ -12,9 +12,14 @@
 #include "main_data.h"
 #include "BMS_controller_CAN.h"
 
+/* chiller_test command (0xDB byte 2) */
+#define CHILLER_TEST_AUTO   0   // normal: chiller controlled by pack temperature
+#define CHILLER_TEST_ON     1   // force chiller + pump ON
+#define CHILLER_TEST_OFF    2   // force chiller + pump OFF
+
 void SCIb_SEND(Uint8 length_sci_rev);
 void chller_operation();
-void chillerData_write(Uint16* chiller_data_write);
+void chillerData_write(Uint16* chiller_data_write, Uint8 enable);
 void chillerData_read(Uint16* chiller_data_read);
 
 struct chillerCtrl_data_struct

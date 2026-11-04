@@ -174,4 +174,32 @@ void pumpData_read(Uint16* pump_data_read)
     pump_debug_cmd.bus_v = pump_data_read[4];
     pump_debug_cmd.pump_current = pump_data_read[5];
     pump_debug_cmd.pump_error_code.all = pump_data_read[6];
+    pump_debug_cmd.rx_tick = CpuTimer0.InterruptCount;
+    pump_debug_cmd.rx_ok = 1;
+}
+
+/* 1 = pump feedback (0x268) says the pump is running without fault, and the feedback is fresh */
+Uint16 pump_feedback_ok(void)
+{
+    if (!pump_debug_cmd.rx_ok)
+    {
+        return 0;       // no feedback received yet
+    }
+    if ((CpuTimer0.InterruptCount - pump_debug_cmd.rx_tick) > PUMP_FB_TIMEOUT_TICKS)
+    {
+        return 0;       // feedback lost
+    }
+    if (pump_debug_cmd.pump_power_fb != PUMP_FB_RUNNING)
+    {
+        return 0;       // pump off or fault
+    }
+    if (pump_debug_cmd.pump_error_code.all != 0)
+    {
+        return 0;       // over current / over voltage / under voltage / dry running / block
+    }
+    if (pump_debug_cmd.target_speed_fb == 0)
+    {
+        return 0;       // not turning
+    }
+    return 1;
 }

@@ -36,15 +36,16 @@
 
 // ---- Select ONE Battery Pack ----
 
-// #define ATV_3_MODULE                // ATV New Model with      - 7S -29P
-// #define BIKE_2_MODULE_TENPOWER      // Pre-Protoype Bike 01 -   10S 20 P
-// #define BIKE_3_MODULE_MOLICELL      // 3D printed Panel Bike -  7S 29 P
-// #define BIKE_3_MODULE_TENPOWER      // Witout Body Panel Bike - 7S 29 P
-// #define ETX_7_kWH                   // ETX 1st Version with EVE cells  1P 22S
- #define ETX_10_kWH                  // ETX with REPT cells 1P 23S
-// #define ETX_12_kWH                  // ETX with REPT cells 1p 22s
-// #define FORKLIFT                    // FORKKIFT AT PRODUCTION
-// #define SMALL_CAR                   // Small Car Battery pack
+// #define ATV_3_MODULE                     // ATV New Model with      - 7S -29P
+// #define BIKE_2_MODULE_TENPOWER_PRODU     // Pre-Protoype Bike 01 -   10S 20 P
+// #define BIKE_3_MODULE_MOLICELL           // 3D printed Panel Bike -  7S 29 P
+// #define BIKE_3_MODULE_TENPOWER           // Witout Body Panel Bike - 7S 29 P
+ #define BIKE_3_MODULE_TENPOWER_PRODU     // Pre-Protoype Bike 02 -   10S 20 P
+// #define ETX_7_kWH                        // ETX 1st Version with EVE cells  1P 22S
+// #define ETX_10_kWH                       // ETX with REPT cells 1P 23S
+// #define ETX_12_kWH                       // ETX with REPT cells 1p 22s
+// #define FORKLIFT                         // FORKKIFT AT PRODUCTION
+// #define SMALL_CAR                        // Small Car Battery pack
 
 
 #if defined(ATV_3_MODULE)
@@ -72,7 +73,7 @@
 //#define CAN_PUMP
 //#define PWM_PUMP
 
-#elif defined(BIKE_2_MODULE_TENPOWER)   // Cell Arrangment 10S 20P - Ten Power Cells - 2 Module per pack
+#elif defined(BIKE_2_MODULE_TENPOWER_PRODU)   // Cell Arrangment 10S 20P - Ten Power Cells - 2 Module per pack
 
 #define EVCU_ACTIVE
 #define CELL_CHEM_NMC
@@ -142,6 +143,31 @@
 #define GBT_CHARGING            1
 #define shunt_CS
 //#define RS485_current_sensor
+//#define CAN_CHILLER
+//#define SCI_CHILLER
+//#define CAN_PUMP
+//#define PWM_PUMP
+
+#elif defined(BIKE_3_MODULE_TENPOWER_PRODU)   // Cell Arrangment 30S 20P - Ten Power Cells - 3 Module per pack (3 x 10S)
+
+#define EVCU_ACTIVE
+#define CELL_CHEM_NMC
+#define CAN_BAUD_RATE_KBPS      500
+#define TOTAL_IC                3 //max 16
+#define AUX_PER_IC              6
+#define TEMP_PER_IC             3  //max 16
+#define CELLS_PER_IC            11 //max 16 - Cell Arrangement - (1,1,1,1,1,0,1,1,1,1,1,0)
+#define SERIES_CELLS            30 //3 x 10S
+#define CELL_UNUSED(ic, c)      ((c) == 5) // unused cell positions, same as analyze_rdata()
+#define STAT_REG                4
+#define DATA_LOOP_COUNT_n       5
+#define SEND_DATA_FREQ          8 //(val/10) seconds
+#define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
+#define BALANCING_ENABLE        1
+#define PRECHARGE_DELAY         20
+#define GBT_CHARGING            1
+#define shunt_CS
+//#define recovery_CS
 //#define CAN_CHILLER
 //#define SCI_CHILLER
 //#define CAN_PUMP

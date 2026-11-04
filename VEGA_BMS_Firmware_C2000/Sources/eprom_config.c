@@ -27,10 +27,10 @@
 #define DEFAULT_DISCHARGE_LIMIT   15000   // 150 Amps
 #define DEFAULT_SC_LIMIT          19000   // 190 Amps
 
-#define CALIB_NOMINAL_V    108.0f     /* pack nominal voltage: ETX 12 kWh 30S NMC = 30 x 3.6 V           */
+#define CALIB_NOMINAL_V    108.0f     /* pack nominal voltage: ATV 3 module 21S NMC = 21 x 3.6 V = 75.6 V (CHECK: 108.0 = 30S) */
                                      /* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
 
-#elif defined(BIKE_2_MODULE_TENPOWER)
+#elif defined(BIKE_2_MODULE_TENPOWER_PRODU )
 
 #define MIN_NOMINAL_CAPACITY      10
 #define MAX_NOMINAL_CAPACITY      300
@@ -38,10 +38,10 @@
 
 // Current limits bounds (Scaled by 100)
 #define DEFAULT_CHARGE_LIMIT     -15000  // -150 Amps
-#define DEFAULT_DISCHARGE_LIMIT   29000   // 150 Amps
-#define DEFAULT_SC_LIMIT          30000   // 190 Amps
+#define DEFAULT_DISCHARGE_LIMIT   29000   // 290 Amps
+#define DEFAULT_SC_LIMIT          30000   // 300 Amps
 
-#define CALIB_NOMINAL_V    72.0f     /* pack nominal voltage: ETX 12 kWh 20S NMC = 20 x 3.6 V           */
+#define CALIB_NOMINAL_V    72.0f     /* pack nominal voltage: Bike 2 module Tenpower 20S NMC = 20 x 3.6 V */
                                      /* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
 
 #elif defined(BIKE_3_MODULE_MOLICELL)
@@ -55,7 +55,7 @@
 #define DEFAULT_DISCHARGE_LIMIT   15000   // 150 Amps
 #define DEFAULT_SC_LIMIT          19000   // 190 Amps
 
-#define CALIB_NOMINAL_V    75.6f     /* pack nominal voltage: ETX 12 kWh 21S NCA = 21 x 3.6 V           */
+#define CALIB_NOMINAL_V    75.6f     /* pack nominal voltage: Bike 3 module Molicell 21S NMC = 21 x 3.6 V */
                                      /* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
 
 #elif defined(BIKE_3_MODULE_TENPOWER)
@@ -69,9 +69,23 @@
 #define DEFAULT_DISCHARGE_LIMIT   15000   // 150 Amps
 #define DEFAULT_SC_LIMIT          19000   // 190 Amps
 
-#define CALIB_NOMINAL_V    108.0f     /* pack nominal voltage: ETX 12 kWh 30S NMC = 30 x 3.6 V           */
+#define CALIB_NOMINAL_V    108.0f     /* pack nominal voltage: Bike 3 module Tenpower 21S NMC = 21 x 3.6 V = 75.6 V (CHECK: 108.0 = 30S) */
                                      /* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
 
+#elif defined(BIKE_3_MODULE_TENPOWER_PRODU)
+
+#define MIN_NOMINAL_CAPACITY      10
+#define MAX_NOMINAL_CAPACITY      300
+#define DEFAULT_NOMINAL_CAPACITY  77
+
+// Current limits bounds (Scaled by 100)
+#define DEFAULT_CHARGE_LIMIT     -15000  // -150 Amps
+#define DEFAULT_DISCHARGE_LIMIT   29000   // 290 Amps
+#define DEFAULT_SC_LIMIT          30000   // 300 Amps
+
+#define CALIB_NOMINAL_V    108.0f     /* pack nominal voltage: Bike 2 module Tenpower 20S NMC = 20 x 3.6 V */
+
+/* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
 #elif defined(ETX_7_kWH)
 
 #define MIN_NOMINAL_CAPACITY      10
@@ -80,10 +94,10 @@
 
 // Current limits bounds (Scaled by 100)
 #define DEFAULT_CHARGE_LIMIT     -15000  // -150 Amps
-#define DEFAULT_DISCHARGE_LIMIT   10000   // 150 Amps
-#define DEFAULT_SC_LIMIT          11000   // 190 Amps
+#define DEFAULT_DISCHARGE_LIMIT   10000   // 100 Amps
+#define DEFAULT_SC_LIMIT          11000   // 110 Amps
 
-#define CALIB_NOMINAL_V    70.4f     /* pack nominal voltage: ETX 12 kWh 22S LFP = 22 x 3.2 V           */
+#define CALIB_NOMINAL_V    70.4f     /* pack nominal voltage: ETX 7 kWh 20S LFP = 20 x 3.2 V = 64.0 V (CHECK: 70.4 = 22S) */
                                      /* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
 
 #elif defined(ETX_10_kWH)
@@ -97,7 +111,6 @@
 #define DEFAULT_DISCHARGE_LIMIT   15000   // 150 Amps
 #define DEFAULT_SC_LIMIT          19000   // 190 Amps
 
-
 #define CALIB_NOMINAL_V    73.6f     /* pack nominal voltage: ETX 10 kWh 23S LFP = 23 x 3.2 V           */
                                      /* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
 
@@ -109,8 +122,11 @@
 
 // Current limits bounds (Scaled by 100)
 #define DEFAULT_CHARGE_LIMIT     -19000  // -190 Amps
-#define DEFAULT_DISCHARGE_LIMIT   17100   // 171 Ah
+#define DEFAULT_DISCHARGE_LIMIT   17100   // 171 Amps
 #define DEFAULT_SC_LIMIT          20000   // 200 Amps
+
+#define CALIB_NOMINAL_V    69.52f     /* pack nominal voltage: ETX 12 kWh 22S LFP = 22 x 3.16 V          */
+                                     /* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
 
 #elif defined(FORKLIFT)
 
@@ -120,12 +136,15 @@
 
 // Current limits bounds (Scaled by 100)
 #define DEFAULT_CHARGE_LIMIT     -19000  // -190 Amps
-#define DEFAULT_DISCHARGE_LIMIT   30000   // 171 Ah
+#define DEFAULT_DISCHARGE_LIMIT   30000   // 300 Amps
 #define DEFAULT_SC_LIMIT          35000   // 350 Amps
-#define CALIB_NOMINAL_V    69.52f     /* pack nominal voltage: ETX 12 kWh 22S LFP = 22 x 3.16 V           */
+
+#define CALIB_NOMINAL_V    48.0f     /* pack nominal voltage: Forklift 15S LFP = 15 x 3.2 V             */
                                      /* one pack-equivalent = nominal_capacity (Ah) x CALIB_NOMINAL_V   */
 
 #endif
+
+#define MAX_RAW_AMP_LIMIT         500     // Do not accept > 500A
 
 #define MAX_RAW_AMP_LIMIT         500     // Do not accept > 500A
 

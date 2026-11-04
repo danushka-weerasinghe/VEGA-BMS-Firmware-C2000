@@ -72,11 +72,11 @@ void chller_operation()
 }
 
 struct chillerCtrl_data_struct chillerCtrl_data;
-void chillerData_write(Uint16* chiller_data_write)
+void chillerData_write(Uint16* chiller_data_write, Uint8 enable)
 {
-    chillerCtrl_data.comp_status = 1;
-    chillerCtrl_data.comp_power_limit = 3;  // MAX Power 20*0.1 = 2KW
-    chillerCtrl_data.comp_speed = 3200;     //
+    chillerCtrl_data.comp_status = enable ? 1 : 0;
+    chillerCtrl_data.comp_power_limit = enable ? 3 : 0;  // MAX Power 20*0.1 = 2KW
+    chillerCtrl_data.comp_speed = enable ? 3200 : 0;     //
 
     chiller_data_write[0] = chillerCtrl_data.comp_speed;
     chiller_data_write[1] = chillerCtrl_data.comp_speed >> 8;

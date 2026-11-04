@@ -2144,12 +2144,14 @@ void analyze_rdata()
         {
 #if defined(ATV_3_MODULE)
             if((local_counter > 3) && (local_counter < 6))
-#elif defined(BIKE_2_MODULE_TENPOWER)
+#elif defined(BIKE_2_MODULE_TENPOWER_PRODU)
             if(local_counter == 5)
 #elif defined(BIKE_3_MODULE_MOLICELL)
             if((local_counter > 3) && (local_counter < 6))
 #elif defined(BIKE_3_MODULE_TENPOWER)
             if((local_counter > 3) && (local_counter < 6))
+#elif defined(BIKE_3_MODULE_TENPOWER_PRODU)
+            if(local_counter == 5)
 #elif defined(ETX_7_kWH)
             if(local_counter == 5)
 #elif defined(ETX_10_kWH)
@@ -2384,8 +2386,8 @@ void timer_task_can()
     static uint16_t debugData_index = 0;
 #if (GBT_CHARGING == 1)
     static uint16_t GBT_Data_index = GBT_SETUP_FRAME_COUNT;     // live frames
-    static uint16_t GBT_setup_index = GBT_SETUP_FRAME_COUNT;    // setup frames, >= count: nothing to send
-    static uint16_t GBT_setup_request_old = 0;
+    static uint16_t GBT_setup_index = 0;                        // setup frames 0..GBT_SETUP_FRAME_COUNT-1
+
 #endif
 
     PDU_getData_local.highest_pack_temparature = Controller.highest_temp;
@@ -2409,18 +2411,17 @@ void timer_task_can()
 #if (GBT_CHARGING == 1)
     if (PDU_setData_local.fixSetS_EVCC.bit.GBT_connected)
     {
-        /* setup data: once per EVCC request (0 -> 1), also before the contactor is closed */
-        if (PDU_setData_local.fixSetS_EVCC.bit.GBT_setup_request && !GBT_setup_request_old)
-        {
-            GBT_setup_index = 0;
-        }
-        GBT_setup_request_old = PDU_setData_local.fixSetS_EVCC.bit.GBT_setup_request;
-
-        if (GBT_setup_index < GBT_SETUP_FRAME_COUNT)
+        /* setup data: sent continuously (index 0..2 repeating) while the EVCC holds GBT_setup_request = 1,
+           also before the contactor is closed */
+        if (PDU_setData_local.fixSetS_EVCC.bit.GBT_setup_request)
         {
             GBT_Data_update();
             PDU_gbt_Data_write(GBT_setup_index++, canMap.msg[CAN_OBJ_22].sendData);
             CAN_sendMessage(CAN_OBJ_22, NOMINAL_DLC, canMap.msg[CAN_OBJ_22].sendData);
+            if (GBT_setup_index >= GBT_SETUP_FRAME_COUNT)
+            {
+                GBT_setup_index = 0;
+            }
         }
         else if (bms_opMode == contactor_closed || bms_opMode == fast_charging)
         {
@@ -2436,7 +2437,7 @@ void timer_task_can()
     }
     else
     {
-        GBT_setup_request_old = 0;      // new request needed after reconnect
+        GBT_setup_index = 0;            // start from index 0 on the next request
     }
 #endif
 
@@ -3784,19 +3785,39 @@ int16 Mcu_Temp(void)
 
 uint16_t chiller_status = 0;
 uint16_t pump_speed = 0;
+
+#define PUMP_PRE_RUN_TICKS      100     // pump runs 5 s before the chiller starts (CpuTimer0 tick = 50 ms)
+
+#if defined(CAN_PUMP)
+#define PUMP_OK()               pump_feedback_ok()      // 0x268 feedback: running, no fault, not lost
+#else
+#define PUMP_OK()               1                       // PWM pump has no feedback, time only
+#endif
+
+/* chiller OFF, pump keeps running */
+static void chiller_stop(void)
+{
+    PDU_getData_local.fixSetChrg.bit.chiller_enable = 0;
+#if defined(CAN_CHILLER)
+    chillerData_write(canMap.msg[CAN_OBJ_20].sendData, 0);
+    CAN_sendMessage(CAN_OBJ_20, NOMINAL_DLC, canMap.msg[CAN_OBJ_20].sendData);
+#endif
+}
+
 /*chiller control*/
 void chillerCtrl(uint16_t highestT)
 {
-    if ((highestT > 33) || chiller_test)
+    static uint16_t pump_started = 0;       // 1 = pump is running for cooling
+    static Uint32 pump_start_tick = 0;      // CpuTimer0 tick when the pump was started
+
+    if ((highestT > 33) || chiller_test)       // chiller_test (0xDB byte 2): 1 = force ON, 0 = auto (temperature)
     {
-#if defined(SCI_CHILLER)
-        chller_operation();
-#elif defined(CAN_CHILLER)
-        chillerData_write(canMap.msg[CAN_OBJ_20].sendData);
-        CAN_sendMessage(CAN_OBJ_20, NOMINAL_DLC, canMap.msg[CAN_OBJ_20].sendData);
-#endif
-        PDU_getData_local.fixSetChrg.bit.chiller_enable = 1;
-        chiller_status = 1;
+        /* 1. start the pump first */
+        if (!pump_started)
+        {
+            pump_started = 1;
+            pump_start_tick = CpuTimer0.InterruptCount;
+        }
 
 #if defined(PWM_PUMP)
         if (!pump_speed)
@@ -3808,14 +3829,36 @@ void chillerCtrl(uint16_t highestT)
         pumpData_write(canMap.msg[CAN_OBJ_24].sendData, ON);
         CAN_sendMessage(CAN_OBJ_24, NOMINAL_DLC, canMap.msg[CAN_OBJ_24].sendData);
 #endif
+        chiller_status = 1;
 
+        /* 2. start the chiller after the pump has run for 5 s (CAN pump: and the pump feedback is OK) */
+        if (((CpuTimer0.InterruptCount - pump_start_tick) >= PUMP_PRE_RUN_TICKS) && PUMP_OK())
+        {
+#if defined(SCI_CHILLER)
+            chller_operation();
+#elif defined(CAN_CHILLER)
+            chillerData_write(canMap.msg[CAN_OBJ_20].sendData, 1);
+            CAN_sendMessage(CAN_OBJ_20, NOMINAL_DLC, canMap.msg[CAN_OBJ_20].sendData);
+#endif
+            PDU_getData_local.fixSetChrg.bit.chiller_enable = 1;
+        }
+        else
+        {
+            chiller_stop();     // pump not running yet / pump fault / feedback lost -> chiller off
+        }
     }
     else if (highestT < 33)
     {
         PDU_getData_local.fixSetChrg.bit.chiller_enable = 0;
         chiller_status = 0;
+        pump_started = 0;
         pump_speed = 0;
         InitEPwmTimer(pump_speed);
+
+#if defined(CAN_CHILLER)
+        chillerData_write(canMap.msg[CAN_OBJ_20].sendData, 0);
+        CAN_sendMessage(CAN_OBJ_20, NOMINAL_DLC, canMap.msg[CAN_OBJ_20].sendData);
+#endif
 
 #if defined(CAN_PUMP)
         pumpData_write(canMap.msg[CAN_OBJ_24].sendData, OFF);
@@ -3825,17 +3868,26 @@ void chillerCtrl(uint16_t highestT)
     }
     else if (chiller_status)
     {
-#if defined(SCI_CHILLER)
-        chller_operation();
-#elif defined(CAN_CHILLER)
-        chillerData_write(canMap.msg[CAN_OBJ_20].sendData);
-        CAN_sendMessage(CAN_OBJ_20, NOMINAL_DLC, canMap.msg[CAN_OBJ_20].sendData);
-#endif
 #if defined(CAN_PUMP)
         pumpData_write(canMap.msg[CAN_OBJ_24].sendData, ON);
         CAN_sendMessage(CAN_OBJ_24, NOMINAL_DLC, canMap.msg[CAN_OBJ_24].sendData);
 #endif
-        PDU_getData_local.fixSetChrg.bit.chiller_enable = 1;
+
+        /* chiller only after the pump has run for 5 s (CAN pump: and the pump feedback is OK) */
+        if (((CpuTimer0.InterruptCount - pump_start_tick) >= PUMP_PRE_RUN_TICKS) && PUMP_OK())
+        {
+#if defined(SCI_CHILLER)
+            chller_operation();
+#elif defined(CAN_CHILLER)
+            chillerData_write(canMap.msg[CAN_OBJ_20].sendData, 1);
+            CAN_sendMessage(CAN_OBJ_20, NOMINAL_DLC, canMap.msg[CAN_OBJ_20].sendData);
+#endif
+            PDU_getData_local.fixSetChrg.bit.chiller_enable = 1;
+        }
+        else
+        {
+            chiller_stop();     // pump not running yet / pump fault / feedback lost -> chiller off
+        }
         chiller_status = 1;
     }
 }
