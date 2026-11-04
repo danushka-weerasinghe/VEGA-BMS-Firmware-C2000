@@ -156,7 +156,7 @@ BO_ 568 chillerTX: 8 Vector__XXX
 BO_ 219 db_commands: 8 Vector__XXX
  SG_ DB_data_request : 0|8@1+ (1,0) [0|0] "" Vector__XXX
  SG_ soc_reset : 8|8@1+ (1,0) [0|0] "" Vector__XXX
- SG_ chiller_test : 16|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ chiller_test : 16|8@1+ (1,0) [0|1] "" Vector__XXX
 
 BO_ 56 gbtData: 8 Vector__XXX
  SG_ GBT_Frame_ID M : 0|8@1+ (1,0) [0|14] "" Vector__XXX
@@ -443,6 +443,7 @@ BA_ "VFrameFormat" BO_ 41 0;
 BA_ "VFrameFormat" BO_ 65 0;
 BA_ "VFrameFormat" BO_ 600 0;
 BA_ "VFrameFormat" BO_ 616 0;
+VAL_ 219 chiller_test 0 "Off (auto, temperature)" 1 "Force ON" ;
 VAL_ 56 GBT_BatteryType 1 "Lead acid" 2 "NiMH" 3 "LFP" 4 "LMO" 5 "LCO" 6 "Ternary" 7 "Polymer Li-ion" 8 "Li titanate" 255 "Other" ;
 VAL_ 56 GBT_CellVoltageState 0 "Normal" 1 "Over high" 2 "Below low" 3 "Reserved" ;
 VAL_ 56 GBT_SocState 0 "Normal" 1 "Over high" 2 "Below low" 3 "Reserved" ;
