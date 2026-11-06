@@ -76,10 +76,10 @@
 
 #define MIN_NOMINAL_CAPACITY      10
 #define MAX_NOMINAL_CAPACITY      300
-#define DEFAULT_NOMINAL_CAPACITY  120
+#define DEFAULT_NOMINAL_CAPACITY  77
 
 // Current limits bounds (Scaled by 100)
-#define DEFAULT_CHARGE_LIMIT     -15000  // -150 Amps
+#define DEFAULT_CHARGE_LIMIT     -12000  // -120 Amps
 #define DEFAULT_DISCHARGE_LIMIT   29000   // 290 Amps
 #define DEFAULT_SC_LIMIT          30000   // 300 Amps
 

@@ -44,13 +44,13 @@ typedef enum
 #if defined(CELL_CHEM_LFP)
 #define GBT_BATTERY_TYPE        GBT_BATT_LFP
 #define GBT_NOMINAL_CELL_V      320
-#define GBT_CELL_V_OVER_HIGH    360     // 3.60 V
-#define GBT_CELL_V_BELOW_LOW    280     // 2.80 V
+#define GBT_CELL_V_OVER_HIGH    365     // 3.65 V
+#define GBT_CELL_V_BELOW_LOW    260     // 2.60 V
 #elif defined(CELL_CHEM_NMC)
 #define GBT_BATTERY_TYPE        GBT_BATT_TERNARY
 #define GBT_NOMINAL_CELL_V      360
-#define GBT_CELL_V_OVER_HIGH    420     // 4.20 V
-#define GBT_CELL_V_BELOW_LOW    280     // 2.80 V
+#define GBT_CELL_V_OVER_HIGH    425     // 4.25 V
+#define GBT_CELL_V_BELOW_LOW    260     // 2.60 V
 #endif
 
 #define GBT_BMS_TEMP_LIMIT      85      // Temperature from the Humidity sensor
@@ -65,8 +65,8 @@ typedef enum
  *   soc >  GBT_SOC_OVER_HIGH -> GBT_STS_OVER_HIGH
  *   soc <  GBT_SOC_BELOW_LOW -> GBT_STS_BELOW_LOW
  *   otherwise                -> GBT_STS_NORMAL */
-#define GBT_SOC_OVER_HIGH       70      // %
-#define GBT_SOC_BELOW_LOW       20      // %
+#define GBT_SOC_OVER_HIGH       100      // %
+#define GBT_SOC_BELOW_LOW         1      // %
 
 
 // ---- Derived values, GB/T units (do not edit) ----

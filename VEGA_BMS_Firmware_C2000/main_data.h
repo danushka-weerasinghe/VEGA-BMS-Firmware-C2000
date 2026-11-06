@@ -36,11 +36,11 @@
 
 // ---- Select ONE Battery Pack ----
 
-// #define ATV_3_MODULE                     // ATV New Model with      - 7S -29P
+ #define ATV_3_MODULE                     // ATV New Model with      - 7S -29P
 // #define BIKE_2_MODULE_TENPOWER_PRODU     // Pre-Protoype Bike 01 -   10S 20 P
 // #define BIKE_3_MODULE_MOLICELL           // 3D printed Panel Bike -  7S 29 P
 // #define BIKE_3_MODULE_TENPOWER           // Witout Body Panel Bike - 7S 29 P
- #define BIKE_3_MODULE_TENPOWER_PRODU     // Pre-Protoype Bike 02 -   10S 20 P
+// #define BIKE_3_MODULE_TENPOWER_PRODU     // Pre-Protoype Bike 02 -   10S 20 P
 // #define ETX_7_kWH                        // ETX 1st Version with EVE cells  1P 22S
 // #define ETX_10_kWH                       // ETX with REPT cells 1P 23S
 // #define ETX_12_kWH                       // ETX with REPT cells 1p 22s
@@ -66,6 +66,8 @@
 #define BALANCING_ENABLE        1
 #define PRECHARGE_DELAY         40
 #define GBT_CHARGING            1
+#define CHILLER_TEMP_ON_ABOVE   33      // degC, cooling ON when highest temperature > this
+#define CHILLER_TEMP_OFF_BELOW  33      // degC, cooling OFF when highest temperature < this
 #define shunt_CS
 //#define recovery_CS
 //#define CAN_CHILLER
@@ -91,6 +93,8 @@
 #define BALANCING_ENABLE        0
 #define PRECHARGE_DELAY         20
 #define GBT_CHARGING            1
+#define CHILLER_TEMP_ON_ABOVE   33      // degC, cooling ON when highest temperature > this
+#define CHILLER_TEMP_OFF_BELOW  33      // degC, cooling OFF when highest temperature < this
 #define shunt_CS
 //#define recovery_CS
 //#define CAN_CHILLER
@@ -116,6 +120,8 @@
 #define BALANCING_ENABLE        0
 #define PRECHARGE_DELAY         20
 #define GBT_CHARGING            1
+#define CHILLER_TEMP_ON_ABOVE   33      // degC, cooling ON when highest temperature > this
+#define CHILLER_TEMP_OFF_BELOW  33      // degC, cooling OFF when highest temperature < this
 #define shunt_CS
 //#define recovery_CS
 //#define CAN_CHILLER
@@ -141,6 +147,8 @@
 #define BALANCING_ENABLE        1
 #define PRECHARGE_DELAY         20
 #define GBT_CHARGING            1
+#define CHILLER_TEMP_ON_ABOVE   33      // degC, cooling ON when highest temperature > this
+#define CHILLER_TEMP_OFF_BELOW  33      // degC, cooling OFF when highest temperature < this
 #define shunt_CS
 //#define RS485_current_sensor
 //#define CAN_CHILLER
@@ -166,6 +174,8 @@
 #define BALANCING_ENABLE        1
 #define PRECHARGE_DELAY         20
 #define GBT_CHARGING            1
+#define CHILLER_TEMP_ON_ABOVE   33      // degC, cooling ON when highest temperature > this
+#define CHILLER_TEMP_OFF_BELOW  33      // degC, cooling OFF when highest temperature < this
 #define shunt_CS
 //#define recovery_CS
 //#define CAN_CHILLER
@@ -192,6 +202,8 @@
 #define BALANCING_ENABLE        0
 #define PRECHARGE_DELAY         20
 #define GBT_CHARGING            0
+#define CHILLER_TEMP_ON_ABOVE   33      // degC, cooling ON when highest temperature > this
+#define CHILLER_TEMP_OFF_BELOW  33      // degC, cooling OFF when highest temperature < this
 #define shunt_CS
 //#define recovery_CS
 //#define CAN_CHILLER
@@ -215,6 +227,8 @@
 #define BALANCING_ENABLE        1
 #define PRECHARGE_DELAY         20
 #define GBT_CHARGING            1
+#define CHILLER_TEMP_ON_ABOVE   33      // degC, cooling ON when highest temperature > this
+#define CHILLER_TEMP_OFF_BELOW  33      // degC, cooling OFF when highest temperature < this
 #define shunt_CS
 //#define CAN_current_sensor
 //#define recovery_CS
@@ -241,6 +255,8 @@
 #define BALANCING_ENABLE        1
 #define PRECHARGE_DELAY         20
 #define GBT_CHARGING            1
+#define CHILLER_TEMP_ON_ABOVE   33      // degC, cooling ON when highest temperature > this
+#define CHILLER_TEMP_OFF_BELOW  33      // degC, cooling OFF when highest temperature < this
 #define shunt_CS
 //#define CAN_current_sensor
 //#define recovery_CS
@@ -266,6 +282,8 @@
 #define BALANCING_ENABLE        1
 #define PRECHARGE_DELAY         40
 #define GBT_CHARGING            0
+#define CHILLER_TEMP_ON_ABOVE   33      // degC, cooling ON when highest temperature > this
+#define CHILLER_TEMP_OFF_BELOW  33      // degC, cooling OFF when highest temperature < this
 #define shunt_CS
 //#define recovery_CS
 //#define CAN_CHILLER
@@ -291,6 +309,8 @@
 #define BALANCING_ENABLE        0
 #define PRECHARGE_DELAY         30
 #define GBT_CHARGING            0
+#define CHILLER_TEMP_ON_ABOVE   35      // degC, cooling ON when highest temperature > this
+#define CHILLER_TEMP_OFF_BELOW  35      // degC, cooling OFF when highest temperature < this
 #define CAN_current_sensor
 //#define recovery_CS
 //#define CAN_CHILLER

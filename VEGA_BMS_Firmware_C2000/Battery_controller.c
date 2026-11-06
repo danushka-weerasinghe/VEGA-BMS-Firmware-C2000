@@ -3783,11 +3783,31 @@ int16 Mcu_Temp(void)
     return temp_value;
 }
 
-uint16_t chiller_status = 0;
-uint16_t pump_speed = 0;
+/*
+ * Chiller / pump control
+ *
+ * PDU_getData_local.fixSetChrg.bit.chiller_enable (0x32 page 1, bit 45) = request to the EVCU
+ * to switch ON the relay that powers the chiller unit and the pump.
+ *
+ * Start:  relay ON + pump ON  ->  10 s  ->  chiller ON (0x238)
+ * Stop:   chiller OFF (0x238) ->  10 s  ->  pump OFF + relay OFF
+ *
+ * Request: chiller_test (0xDB byte 2)
+ *   CHILLER_TEST_ON   (1)         -> force ON (testing)
+ *   CHILLER_TEST_AUTO (0) / other -> by temperature: ON above 33 degC, OFF below 33 degC,
+ *                                    33 degC = keep state. No manual OFF needed: send 0 and the
+ *                                    cooling switches off by itself when the pack is below 33 degC.
+ *
+ * Called every 50 ms from the main loop. chiller_enable is written on every call because the
+ * main loop clears fixSetChrg.all when the EVCU is not in the charging state.
+ */
+
+
+#define PUMP_PWM_DUTY           60      // %, PWM pump duty while cooling
 
 #define PUMP_PRE_RUN_TICKS      200     // pump runs 10 s before the chiller starts (CpuTimer0 tick = 50 ms)
 #define PUMP_POST_RUN_TICKS     200     // pump keeps running 10 s after the chiller stops (CpuTimer0 tick = 50 ms)
+#define OFF_FRAME_TICKS         20      // after switching OFF, send the OFF frame for 1 s, then stop sending (CpuTimer0 tick = 50 ms)
 
 #if defined(CAN_PUMP)
 #define PUMP_OK()               pump_feedback_ok()      // 0x268 feedback: running, no fault, not lost
@@ -3795,120 +3815,195 @@ uint16_t pump_speed = 0;
 #define PUMP_OK()               1                       // PWM pump has no feedback, time only
 #endif
 
-/* chiller OFF, pump keeps running */
-static void chiller_stop(void)
+typedef enum
 {
-    PDU_getData_local.fixSetChrg.bit.chiller_enable = 0;
-#if defined(CAN_CHILLER)
-    chillerData_write(canMap.msg[CAN_OBJ_20].sendData, 0);
-    CAN_sendMessage(CAN_OBJ_20, NOMINAL_DLC, canMap.msg[CAN_OBJ_20].sendData);
+    COOL_IDLE,          // relay OFF, pump OFF, chiller OFF
+    COOL_PUMP_PRERUN,   // relay ON,  pump ON,  chiller OFF  (waiting PUMP_PRE_RUN_TICKS)
+    COOL_RUNNING,       // relay ON,  pump ON,  chiller ON
+    COOL_PUMP_POSTRUN   // relay ON,  pump ON,  chiller OFF  (waiting PUMP_POST_RUN_TICKS)
+} cool_state_t;
+
+volatile cool_state_t cool_state = COOL_IDLE;   // for debugging (watch window)
+uint16_t chiller_status = 0;                    // 1 = chiller unit commanded ON
+uint16_t pump_speed = 0;                        // PWM pump duty, %
+
+/* pump command
+ *   PWM pump: reconfigure only when the duty changes
+ *   CAN pump: 0x258 ON every call while ON; after switching OFF, 0x258 OFF for OFF_FRAME_TICKS, then not sent
+ */
+static void pump_cmd(Uint16 on)
+{
+#if defined(PWM_PUMP)
+    Uint16 duty = on ? PUMP_PWM_DUTY : 0;
+    static Uint16 pwm_init = 0;
+    if ((duty != pump_speed) || !pwm_init)
+    {
+        pump_speed = duty;
+        InitEPwmTimer(pump_speed);
+        pwm_init = 1;
+    }
+#elif defined(CAN_PUMP)
+    static Uint16 last_on = 0;
+    static Uint16 off_frames_left = 0;  // OFF frames still to send (0 at power-up: nothing sent)
+
+    if (last_on && !on)
+    {
+        off_frames_left = OFF_FRAME_TICKS;      // just switched OFF
+    }
+    last_on = on;
+
+    if (on || off_frames_left)
+    {
+        if (!on)
+        {
+            off_frames_left--;
+        }
+        pumpData_write(canMap.msg[CAN_OBJ_24].sendData, on ? ON : OFF);
+        CAN_sendMessage(CAN_OBJ_24, NOMINAL_DLC, canMap.msg[CAN_OBJ_24].sendData);
+    }
+#endif
+}
+
+/* chiller unit command
+ *   0x238 is sent only after the chiller has been switched ON:
+ *   ON every call while ON; after switching OFF, 0x238 OFF (all zero) for OFF_FRAME_TICKS,
+ *   then 0x238 is not sent until the next ON. Nothing is sent at power-up.
+ */
+static void chiller_cmd(Uint16 on)
+{
+    static Uint16 last_on = 0;
+    static Uint16 off_frames_left = 0;  // OFF frames still to send (0 at power-up: nothing sent)
+
+    if (last_on && !on)
+    {
+        off_frames_left = OFF_FRAME_TICKS;      // just switched OFF
+    }
+    last_on = on;
+    chiller_status = on ? 1 : 0;
+
+#if defined(SCI_CHILLER)
+    if (on)
+    {
+        chller_operation();
+    }
+#elif defined(CAN_CHILLER)
+    if (on || off_frames_left)
+    {
+        if (!on)
+        {
+            off_frames_left--;
+        }
+        chillerData_write(canMap.msg[CAN_OBJ_20].sendData, on ? 1 : 0);
+        CAN_sendMessage(CAN_OBJ_20, NOMINAL_DLC, canMap.msg[CAN_OBJ_20].sendData);
+    }
 #endif
 }
 
 /*chiller control*/
 void chillerCtrl(uint16_t highestT)
 {
-    static uint16_t pump_started = 0;       // 1 = pump is running for cooling
-    static Uint32 pump_start_tick = 0;      // CpuTimer0 tick when the pump was started
-    static uint16_t pump_stopping = 0;      // 1 = chiller is off, pump still running for PUMP_POST_RUN_TICKS
-    static Uint32 chiller_stop_tick = 0;    // CpuTimer0 tick when the chiller was switched off
+    static Uint32 state_tick = 0;       // CpuTimer0 tick when the current state was entered
+    Uint32 elapsed;
+    enum { COOL_HOLD, COOL_ON, COOL_OFF } cool_req;
 
-    if ((highestT > 33) || chiller_test)       // chiller_test (0xDB byte 2): 1 = force ON, 0 = auto (temperature)
+    /* 1. cooling request */
+    if (chiller_test == CHILLER_TEST_ON)
     {
-        pump_stopping = 0;
-
-        /* 1. start the pump first */
-        if (!pump_started)
+        /* test mode: force ON */
+        cool_req = COOL_ON;
+    }
+    else
+    {
+        /* CHILLER_TEST_AUTO (0) or any other value: control by pack temperature */
+        if (highestT > CHILLER_TEMP_ON_ABOVE)
         {
-            pump_started = 1;
-            pump_start_tick = CpuTimer0.InterruptCount;
+            cool_req = COOL_ON;     // hot  -> cooling ON
         }
-
-#if defined(PWM_PUMP)
-        if (!pump_speed)
+        else if (highestT < CHILLER_TEMP_OFF_BELOW)
         {
-            pump_speed = 60;
-            InitEPwmTimer(pump_speed);
-        }
-#elif defined(CAN_PUMP)
-        pumpData_write(canMap.msg[CAN_OBJ_24].sendData, ON);
-        CAN_sendMessage(CAN_OBJ_24, NOMINAL_DLC, canMap.msg[CAN_OBJ_24].sendData);
-#endif
-        chiller_status = 1;
-
-        /* 2. start the chiller after the pump has run for 10 s (CAN pump: and the pump feedback is OK) */
-        if (((CpuTimer0.InterruptCount - pump_start_tick) >= PUMP_PRE_RUN_TICKS) && PUMP_OK())
-        {
-#if defined(SCI_CHILLER)
-            chller_operation();
-#elif defined(CAN_CHILLER)
-            chillerData_write(canMap.msg[CAN_OBJ_20].sendData, 1);
-            CAN_sendMessage(CAN_OBJ_20, NOMINAL_DLC, canMap.msg[CAN_OBJ_20].sendData);
-#endif
-            PDU_getData_local.fixSetChrg.bit.chiller_enable = 1;
+            cool_req = COOL_OFF;    // cool -> cooling OFF automatically
         }
         else
         {
-            chiller_stop();     // pump not running yet / pump fault / feedback lost -> chiller off
+            cool_req = COOL_HOLD;   // between the limits: keep the current state
         }
     }
-    else if (highestT < 33)
+
+    /* 2. state transitions */
+    elapsed = CpuTimer0.InterruptCount - state_tick;
+
+    switch (cool_state)
     {
-        /* 1. chiller off now */
-        if (chiller_status)     // cooling was on: start the pump run-on time
+    case COOL_IDLE:
+        if (cool_req == COOL_ON)
         {
-            chiller_status = 0;
-            pump_stopping = 1;
-            chiller_stop_tick = CpuTimer0.InterruptCount;
+            cool_state = COOL_PUMP_PRERUN;          // relay ON + pump ON now
+            state_tick = CpuTimer0.InterruptCount;
         }
-        chiller_stop();         // chiller_enable = 0, chiller OFF frame
-        pump_started = 0;
+        break;
 
-        /* 2. pump off 10 s after the chiller */
-        if (pump_stopping && ((CpuTimer0.InterruptCount - chiller_stop_tick) < PUMP_POST_RUN_TICKS))
+    case COOL_PUMP_PRERUN:
+        if (cool_req == COOL_OFF)
         {
-#if defined(CAN_PUMP)
-            pumpData_write(canMap.msg[CAN_OBJ_24].sendData, ON);     // PWM pump: keeps running at pump_speed
-            CAN_sendMessage(CAN_OBJ_24, NOMINAL_DLC, canMap.msg[CAN_OBJ_24].sendData);
-#endif
+            cool_state = COOL_IDLE;                 // chiller never started: pump + relay OFF now
         }
-        else
+        else if ((elapsed >= PUMP_PRE_RUN_TICKS) && PUMP_OK())
         {
-            pump_stopping = 0;
-            pump_speed = 0;
-            InitEPwmTimer(pump_speed);
+            cool_state = COOL_RUNNING;              // pump has run 10 s: chiller ON
+        }
+        break;
 
-#if defined(CAN_PUMP)
-            pumpData_write(canMap.msg[CAN_OBJ_24].sendData, OFF);
-            CAN_sendMessage(CAN_OBJ_24, NOMINAL_DLC, canMap.msg[CAN_OBJ_24].sendData);
-#endif
+    case COOL_RUNNING:
+        if (cool_req == COOL_OFF)
+        {
+            cool_state = COOL_PUMP_POSTRUN;         // chiller OFF now, pump runs 10 s more
+            state_tick = CpuTimer0.InterruptCount;
         }
+        break;
+
+    case COOL_PUMP_POSTRUN:
+        if (cool_req == COOL_ON)
+        {
+            cool_state = COOL_PUMP_PRERUN;          // pump still running: wait 10 s again, then chiller ON
+            state_tick = CpuTimer0.InterruptCount;
+        }
+        else if (elapsed >= PUMP_POST_RUN_TICKS)
+        {
+            cool_state = COOL_IDLE;                 // 10 s after the chiller: pump + relay OFF
+        }
+        break;
+
+    default:
+        cool_state = COOL_IDLE;
+        break;
     }
-    else if (chiller_status)
-    {
-#if defined(CAN_PUMP)
-        pumpData_write(canMap.msg[CAN_OBJ_24].sendData, ON);
-        CAN_sendMessage(CAN_OBJ_24, NOMINAL_DLC, canMap.msg[CAN_OBJ_24].sendData);
-#endif
 
-        /* chiller only after the pump has run for 10 s (CAN pump: and the pump feedback is OK) */
-        if (((CpuTimer0.InterruptCount - pump_start_tick) >= PUMP_PRE_RUN_TICKS) && PUMP_OK())
-        {
-#if defined(SCI_CHILLER)
-            chller_operation();
-#elif defined(CAN_CHILLER)
-            chillerData_write(canMap.msg[CAN_OBJ_20].sendData, 1);
-            CAN_sendMessage(CAN_OBJ_20, NOMINAL_DLC, canMap.msg[CAN_OBJ_20].sendData);
-#endif
-            PDU_getData_local.fixSetChrg.bit.chiller_enable = 1;
-        }
-        else
-        {
-            chiller_stop();     // pump not running yet / pump fault / feedback lost -> chiller off
-        }
-        chiller_status = 1;
+    /* 3. outputs, every call (pump_cmd / chiller_cmd stop the OFF frames 1 s after switching OFF) */
+    switch (cool_state)
+    {
+    case COOL_PUMP_PRERUN:
+    case COOL_PUMP_POSTRUN:
+        PDU_getData_local.fixSetChrg.bit.chiller_enable = 1;    // relay ON
+        pump_cmd(1);
+        chiller_cmd(0);
+        break;
+
+    case COOL_RUNNING:
+        PDU_getData_local.fixSetChrg.bit.chiller_enable = 1;    // relay ON
+        pump_cmd(1);
+        chiller_cmd(PUMP_OK());     // CAN pump fault / feedback lost -> chiller OFF until the pump is OK again
+        break;
+
+    case COOL_IDLE:
+    default:
+        PDU_getData_local.fixSetChrg.bit.chiller_enable = 0;    // relay OFF
+        pump_cmd(0);
+        chiller_cmd(0);
+        break;
     }
 }
+
+
 
 Uint16 OTA_handshake_connect_reset()
  {
