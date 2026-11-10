@@ -105,8 +105,90 @@ void chillerData_read(Uint16* chiller_data_read)
 //      chillerCtrl_data.compressor_speed_actual = ECanaMboxes.MBOX19.MDH.byte.BYTE6;
     chillerDiag_data.current = chiller_data_read[6];
     chillerDiag_data.voltage = chiller_data_read[7] * 4;
+    chillerDiag_data.rx_tick = CpuTimer0.InterruptCount;
+    chillerDiag_data.rx_ok = 1;
 
 //      Chiller_compressor_state = {if(ECanaMboxes.MBOX19.MDL.byte.BYTE3 == 0x00){off}} ;
 
 }
 
+/*
+ * Chiller unit fault - call on every chiller_cmd() pass (on = chiller commanded ON).
+ * While ON: 0x248 missing for CHILLER_FB_TIMEOUT_TICKS (2 s)                    -> CHILLER_FAULT_NO_REPLY
+ *           0x248 byte 4 (chiller_error) not no_fault for CHILLER_ERR_DETECT_TICKS (1 s) -> that code (1..7)
+ *           0x248 byte 3 = compressor_error (byte 4 = 0) for CHILLER_ERR_DETECT_TICKS  -> CHILLER_FAULT_COMPRESSOR
+ * chiller_fault_now = 1 when a fault is confirmed: chillerCtrl() goes to COOL_CHILLER_FAULT
+ * (relay chiller_enable = 0, pump OFF, chiller OFF), latched until BMS reset.
+ * chiller_fault_code keeps the first confirmed fault until BMS reset (0x35 page 6 byte 2).
+ */
+Uint16 chiller_fault_code = CHILLER_FAULT_NONE;
+Uint16 chiller_fault_now = 0;
+static Uint16 chiller_fault_on_last = 0;
+static Uint32 chiller_fault_on_tick = 0;    // CpuTimer0 tick when the chiller was switched ON
+static Uint16 chiller_err_active = 0;       // 1 = chiller reports an error now
+static Uint32 chiller_err_start = 0;        // CpuTimer0 tick when that started
+
+void chiller_fault_update(Uint16 on)
+{
+    Uint32 now = CpuTimer0.InterruptCount;
+    Uint16 code = CHILLER_FAULT_NONE;
+    Uint16 confirmed = 0;
+
+    if (on && !chiller_fault_on_last)
+    {
+        chiller_fault_on_tick = now;        // just switched ON: old 0x248 data not used, wait for new frames
+        chillerDiag_data.rx_ok = 0;
+    }
+    chiller_fault_on_last = on;
+    chiller_fault_now = 0;
+
+    if (!on)
+    {
+        chiller_err_active = 0;             // chiller OFF: not checked
+        return;
+    }
+
+    if (!chillerDiag_data.rx_ok || ((now - chillerDiag_data.rx_tick) > CHILLER_FB_TIMEOUT_TICKS))
+    {
+        if ((now - chiller_fault_on_tick) > CHILLER_FB_TIMEOUT_TICKS)
+        {
+            code = CHILLER_FAULT_NO_REPLY;  // ON for 2 s, no (fresh) 0x248
+            confirmed = 1;                  // already timed by CHILLER_FB_TIMEOUT_TICKS
+        }
+        chiller_err_active = 0;
+    }
+    else
+    {
+        if (chillerDiag_data.chiller_error != no_fault)
+        {
+            code = (Uint16)chillerDiag_data.chiller_error & 0xFF;  // error reported by the chiller (1..7)
+        }
+        else if (chillerDiag_data.chiller_comp_state == compressor_error)
+        {
+            code = CHILLER_FAULT_COMPRESSOR;
+        }
+
+        if (code == CHILLER_FAULT_NONE)
+        {
+            chiller_err_active = 0;
+        }
+        else
+        {
+            if (!chiller_err_active)
+            {
+                chiller_err_active = 1;
+                chiller_err_start = now;
+            }
+            confirmed = ((now - chiller_err_start) >= CHILLER_ERR_DETECT_TICKS) ? 1 : 0;
+        }
+    }
+
+    if (confirmed)
+    {
+        chiller_fault_now = 1;
+        if (chiller_fault_code == CHILLER_FAULT_NONE)
+        {
+            chiller_fault_code = code;      // first fault kept until BMS reset
+        }
+    }
+}

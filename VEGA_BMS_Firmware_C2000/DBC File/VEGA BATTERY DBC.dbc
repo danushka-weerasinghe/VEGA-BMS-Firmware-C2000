@@ -225,7 +225,7 @@ BO_ 56 gbtData: 8 Vector__XXX
  SG_ GBT_T_Probe_9 m13 : 56|8@1+ (1,0) [0|255] "C" Vector__XXX
 
 BO_ 53 eepromData: 8 Vector__XXX
- SG_ EEP_Page_ID M : 0|8@1+ (1,0) [1|5] "" Vector__XXX
+ SG_ EEP_Page_ID M : 0|8@1+ (1,0) [1|6] "" Vector__XXX
  SG_ EEP_NominalCapacity m1 : 8|32@1+ (1,0) [0|4294967295] "Ah" Vector__XXX
  SG_ EEP_CapacityHealth m1 : 56|8@1+ (1,0) [0|1] "" Vector__XXX
  SG_ EEP_ChargeCurrentLimit m2 : 8|16@1+ (1,0) [0|65535] "A" Vector__XXX
@@ -248,6 +248,8 @@ BO_ 53 eepromData: 8 Vector__XXX
  SG_ EEP_FwUpdateYear m5 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
  SG_ EEP_FwUpdateMonth m5 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
  SG_ EEP_FwUpdateDay m5 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ EEP_PumpFaultCode m6 : 8|8@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ EEP_ChillerFaultCode m6 : 16|8@1+ (1,0) [0|9] "" Vector__XXX
 
 BO_ 98 evccData: 8 Vector__XXX
  SG_ EVCC_GBT_SetupRequest : 10|1@1+ (1,0) [0|1] "" Vector__XXX
@@ -351,7 +353,8 @@ CM_ SG_ 50 cv_mode "Constant voltage mode flag";
 CM_ SG_ 50 charge_current_lim "Charge current limit exceeded flag";
 CM_ SG_ 50 fc_contactor_error "fixSetChrg bit 3: FC contactor error (no feedback after close)";
 CM_ SG_ 50 low_soc "Low SOC warning during charge flag";
-CM_ SG_ 50 chiller_enable "Chiller enable command";
+CM_ SG_ 50 chiller_enable "Chiller + pump relay request to EVCU. 1 = relay ON: set together with pump start, held while the chiller runs, cleared 10 s after the chiller stops (pump run-on).";
+CM_ SG_ 219 chiller_test "0 = auto: cooling ON above 33 degC, OFF below 33 degC. 1 = force ON for testing. Start: relay + pump ON, chiller ON after 10 s. Stop: chiller OFF, pump + relay OFF after 10 s.";
 CM_ SG_ 50 charging "Charging status flag";
 CM_ SG_ 50 BMS_power_down_ready "fixSetChrg bit 7: BMS power down ready";
 CM_ SG_ 105 db_index "Multiplexor ID
@@ -397,11 +400,13 @@ CM_ SG_ 105 temp_count "Temperature probes in the pack (TOTAL_IC x TEMP_PER_IC),
 CM_ SG_ 105 ic_count "Cell monitor ICs in the pack (TOTAL_IC). This DBC is made for 3 ICs - frame layout moves with TOTAL_IC";
 CM_ SG_ 105 v_cell_0 "Series cell number, 0-based, unused positions (CELL_UNUSED) skipped. 0xFFFF = no cell";
 CM_ SG_ 105 t_cell_0 "Temperature probes (ic x TEMP_PER_IC + t), 0-based. 0xFF = no probe";
-CM_ BO_ 53 "EEPROM configuration broadcast (broadcast_eeprom_data_over_can), every 10th CAN task pass, pages 1..5";
-CM_ SG_ 53 EEP_Page_ID "Multiplexor page 1..5";
+CM_ BO_ 53 "EEPROM configuration broadcast (broadcast_eeprom_data_over_can), every 10th CAN task pass, pages 1..6 (page 6 = chiller pump fault + chiller unit fault)";
+CM_ SG_ 53 EEP_Page_ID "Multiplexor page 1..6";
 CM_ SG_ 53 EEP_ChargeCurrentLimit "Charge current limit, positive (CHARGE_CURRENT_THRESHOLD / -100)";
 CM_ SG_ 53 EEP_PackYear "BCD, e.g. 0x26 = 2026";
 CM_ SG_ 53 EEP_FwUpdateYear "BCD, e.g. 0x26 = 2026";
+CM_ SG_ 53 EEP_PumpFaultCode "Chiller pump fault (pump_fault_code). Latched: cooling (relay, pump, chiller) stays OFF until BMS reset. 1 = dry run (PWM pump: speed > 7500 rpm for 3 s, CAN pump: 0x268 dry running bit for 3 s). 2 = no feedback (PWM pump: pump ON and speed < 3500 rpm for 5 s, CAN pump: 0x268 missing / not running / speed 0 for 5 s). 3 = CAN pump error (0x268 over current / over voltage / under voltage / block for 1 s, see pumpFeedback PUMP_FaultCode).";
+CM_ SG_ 53 EEP_ChillerFaultCode "Chiller unit fault (chiller_fault_code). Latched: cooling (relay chiller_enable, pump, chiller) goes OFF and stays OFF until BMS reset. 1..7 = error reported by the chiller in 0x248 byte 4 (chilleRX Chiller_error) for 1 s. 8 = chiller ON but no 0x248 reply for 2 s. 9 = 0x248 compressor state = error without an error code for 1 s.";
 CM_ SG_ 50 coulomb_count "Coulomb count (INA229), float, high byte first";
 CM_ SG_ 49 EVCU_powerdown_ready "fixSetS bit 7: EVCU power down ready";
 CM_ BO_ 48 "Slave BMS to master, same layout as getData (PDU_getDataSlave_read reads index 0..2)";
@@ -443,7 +448,7 @@ BA_ "VFrameFormat" BO_ 41 0;
 BA_ "VFrameFormat" BO_ 65 0;
 BA_ "VFrameFormat" BO_ 600 0;
 BA_ "VFrameFormat" BO_ 616 0;
-VAL_ 219 chiller_test 0 "Off (auto, temperature)" 1 "Force ON" ;
+VAL_ 219 chiller_test 0 "Auto (temperature)" 1 "Force ON" ;
 VAL_ 56 GBT_BatteryType 1 "Lead acid" 2 "NiMH" 3 "LFP" 4 "LMO" 5 "LCO" 6 "Ternary" 7 "Polymer Li-ion" 8 "Li titanate" 255 "Other" ;
 VAL_ 56 GBT_CellVoltageState 0 "Normal" 1 "Over high" 2 "Below low" 3 "Reserved" ;
 VAL_ 56 GBT_SocState 0 "Normal" 1 "Over high" 2 "Below low" 3 "Reserved" ;
@@ -456,6 +461,8 @@ VAL_ 56 GBT_BmsTempState 0 "Normal" 1 "Over high" 2 "Untrusted" 3 "Reserved" ;
 VAL_ 56 GBT_FcContactorState 0 "Normal" 1 "Abnormal" 2 "Untrusted" 3 "Reserved" ;
 VAL_ 53 EEP_CapacityHealth 0 "OK" 1 "Default loaded" ;
 VAL_ 53 EEP_CurrentsHealth 0 "OK" 1 "Default loaded" ;
+VAL_ 53 EEP_PumpFaultCode 0 "No fault" 1 "Dry run" 2 "No feedback" 3 "Pump error" ;
+VAL_ 53 EEP_ChillerFaultCode 0 "No fault" 1 "Over current" 2 "Running over voltage" 3 "Running under voltage" 4 "Standby over voltage" 5 "Standby under voltage" 6 "Comm failure" 7 "Speed error" 8 "No reply (0x248 missing)" 9 "Compressor error" ;
 VAL_ 600 PUMP_OnOff 0 "Stop" 1 "Start" ;
 VAL_ 616 PUMP_State 0 "Off" 1 "Running" 2 "Fault" ;
 VAL_ 616 PUMP_FaultCode 0 "No fault" 1 "Over current" 2 "Over voltage" 4 "Under voltage" 8 "Dry running" 16 "Block protection" ;

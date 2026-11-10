@@ -29,8 +29,52 @@
 #define PUMP_FB_FAULT           2
 
 #define PUMP_FB_TIMEOUT_TICKS   40      // 2 s without 0x268 = feedback lost (CpuTimer0 tick = 50 ms)
+#define PUMP_CAN_ERR_DETECT_TICKS 20    // CAN pump: reported over current / voltage / block for 1 s = pump error (CpuTimer0 tick = 50 ms)
+                                        // CAN pump dry run uses PUMP_DRY_DETECT_TICKS, no feedback uses PUMP_NOFB_DETECT_TICKS
+
+/* PWM pump speed feedback, eCAP2 on GPIO15. DC45A: rpm = 30 x pulse frequency */
+#define PUMP_FB_RPM_FACTOR          2700000000UL    // 30 * SYSCLK (90 MHz): rpm = factor / period
+#define PUMP_FB_MAX_RPM             20000UL         // faster than this = noise, ignored (dry run measured 9561 rpm)
+#define PUMP_FB_MIN_PERIOD          (PUMP_FB_RPM_FACTOR / PUMP_FB_MAX_RPM)  // 135000 SYSCLK counts
+#define PUMP_FB_MIN_RPM             3500            // pump OK when turning at this speed or faster. At PUMP_PWM_DUTY 60 % the pump
+                                                    // runs 5250-6550 rpm; below 3500 = no feedback. Also rejects steady mains hum
+                                                    // on an open FB wire (50 Hz = 1500 rpm, 100 Hz = 3000 rpm). Lower it if the duty is reduced.
+#define PUMP_FB_PWM_TIMEOUT_TICKS   20              // 1 s without an accepted pulse = pump stopped (CpuTimer0 tick = 50 ms)
+#define PUMP_FB_STABLE_EDGES        8               // accept a period only after 8 matching periods in a row (noise rejection)
+#define PUMP_FB_STABLE_TOL_SHIFT    4               // "matching" = within 1/16 (6.25 %) of the previous period
+
+/* dry run (no water): the unloaded pump speeds up. Measured: with water 5250-6550 rpm, dry 9561 rpm */
+#define PUMP_DRY_RPM                7500            // 250 Hz feedback x 30: faster than this = no water
+#define PUMP_DRY_DETECT_TICKS       60              // 3 s continuously above PUMP_DRY_RPM = dry run (CpuTimer0 tick = 50 ms)
+
+/* no feedback: pump commanded ON but no speed pulse (pump blocked / not powered / FB wire open) */
+#define PUMP_NOFB_DETECT_TICKS      100             // 5 s commanded ON with pump_rpm < PUMP_FB_MIN_RPM = no feedback (CpuTimer0 tick = 50 ms)
+
+extern Uint16 pump_rpm;                             // measured PWM pump speed, rpm
+extern Uint16 pump_dry_run;                         // 1 = pump running dry (no water)
+extern Uint16 pump_no_feedback;                     // 1 = pump ON but no speed feedback
+
+extern Uint16 pump_can_dry_run;                     // CAN pump: 1 = pump reports dry running (3 s)
+extern Uint16 pump_can_error;                       // CAN pump: 1 = pump reports over current / voltage / block (1 s)
+extern Uint16 pump_can_no_feedback;                 // CAN pump: 1 = 0x268 missing / not running / speed 0 (5 s)
 
 extern struct pumpRx pump_debug_cmd;
+
+/* ---------- chiller pump control, used by chillerCtrl() (Battery_controller.c) ---------- */
+#define PUMP_PWM_DUTY           60      // %, PWM pump duty while cooling
+
+/* pump_fault_code: pump fault that latched cooling OFF (COOL_PUMP_FAULT), 0 until then, cleared only by BMS reset.
+   Sent on CAN_OBJ_9 (0x35) mux page 6 byte 1 (eprom_config.c), DBC signal EEP_PumpFaultCode */
+#define PUMP_FAULT_NONE         0
+#define PUMP_FAULT_DRY_RUN      1       // no water (PWM: speed too high, CAN: pump reports dry running)
+#define PUMP_FAULT_NO_FEEDBACK  2       // pump ON but no feedback (PWM: no speed pulse, CAN: 0x268 missing / not running)
+#define PUMP_FAULT_PUMP_ERROR   3       // CAN pump reports over current / over voltage / under voltage / block (which one: 0x268 PUMP_FaultCode in the DBC)
+
+extern Uint16 pump_fault_code;                      // PUMP_FAULT_xxx
+extern Uint16 pump_dry_fault_count;                 // dry-run stops since power-up (watch window)
+extern Uint16 pump_nofb_fault_count;                // no-feedback stops since power-up (watch window)
+extern Uint16 pump_err_fault_count;                 // CAN pump error stops since power-up (watch window)
+extern Uint16 pump_speed;                           // PWM pump duty now, %
 
 
 
@@ -102,14 +146,25 @@ enum pump_state {OFF,ON};
 //
 // Function Prototypes
 //
-__interrupt void ecap1_isr(void);
-void InitECapture(void);
+__interrupt void ecap2_isr(void);
+void InitPumpFeedback(void);
+Uint16 pump_speed_rpm(void);
+Uint16 pump_pwm_feedback_ok(void);
+Uint16 pump_dry_update(void);
+Uint16 pump_nofb_update(Uint16 pump_on);
+void pump_feedback_enable(Uint16 on);
 void InitEPwmTimer(Uint8 pumpStatus);
 
 void pumpData_write(Uint16* pump_data_write, enum pump_state pump_status);
 void pumpData_read(Uint16* pump_data_read);
 
 Uint16 pump_feedback_ok(void);
+void pump_can_update(void);
+void pump_can_feedback_enable(Uint16 on);
+
+void pump_cmd(Uint16 on);           // switch the pump ON / OFF (PWM or CAN), call every chillerCtrl() pass
+Uint16 pump_ok(void);               // 1 = pump feedback OK (running, no fault)
+Uint16 pump_fault_latch(void);      // 1 = pump fault now: sets pump_fault_code + counter
 
 
 #endif /* PUMP_PWM_H_ */

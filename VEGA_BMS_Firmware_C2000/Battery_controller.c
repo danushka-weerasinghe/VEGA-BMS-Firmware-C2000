@@ -247,7 +247,7 @@ unsigned long loop_counter_x = 0;
 
 double current_val_A = 0;
 double current_ofst = 0;
-Uint8 t50_ms_timer = 0;
+Uint16 t50_ms_timer = 0;
 
 /*
  * Data variables
@@ -602,6 +602,11 @@ void SYS_CONFIG()
     InitSpiaGpio();
 
     InitEPwm2Gpio();
+
+#if defined(PWM_PUMP)
+    InitPumpFeedback();     // pump speed feedback: GPIO15 = ECAP2 (after InitScibGpio so the mux is not overwritten)
+#endif
+
 //    InitSpibGpio();
     InitI2CGpio();
 #if(CANBUS == ACTIVE)
@@ -832,7 +837,7 @@ __interrupt void cpu_timer0_isr(void)
 #endif
         }
     }
-    if(t50_ms_timer > 50)
+    if(t50_ms_timer > 50 )
     {
 
         soc_soh_flag = 1; /*Set flag to calculate soc_soh*/
@@ -840,10 +845,12 @@ __interrupt void cpu_timer0_isr(void)
     timer_ready_adc = 1;
     t50_ms_timer++;
     shuntCS_watchdog++;
+
     if (t50_ms_timer > 65500)
     {
-        t50_ms_timer = 0;
+        t50_ms_timer = 100;
     }
+
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
 }
 __interrupt void cpu_timer1_isr(void)
@@ -3802,67 +3809,25 @@ int16 Mcu_Temp(void)
  * main loop clears fixSetChrg.all when the EVCU is not in the charging state.
  */
 
-
-#define PUMP_PWM_DUTY           60      // %, PWM pump duty while cooling
+/* CHILLER_TEMP_ON_ABOVE / CHILLER_TEMP_OFF_BELOW: per vehicle in main_data.h
+   Pump control (pump_cmd, pump_ok, pump_fault_latch, PUMP_PWM_DUTY, PUMP_FAULT_xxx): Pump_PWM.c / Pump_PWM.h */
 
 #define PUMP_PRE_RUN_TICKS      200     // pump runs 10 s before the chiller starts (CpuTimer0 tick = 50 ms)
 #define PUMP_POST_RUN_TICKS     200     // pump keeps running 10 s after the chiller stops (CpuTimer0 tick = 50 ms)
-#define OFF_FRAME_TICKS         20      // after switching OFF, send the OFF frame for 1 s, then stop sending (CpuTimer0 tick = 50 ms)
-
-#if defined(CAN_PUMP)
-#define PUMP_OK()               pump_feedback_ok()      // 0x268 feedback: running, no fault, not lost
-#else
-#define PUMP_OK()               1                       // PWM pump has no feedback, time only
-#endif
+#define OFF_FRAME_TICKS         20      // chiller: after switching OFF, send 0x238 OFF for 1 s, then stop sending (CpuTimer0 tick = 50 ms)
 
 typedef enum
 {
     COOL_IDLE,          // relay OFF, pump OFF, chiller OFF
     COOL_PUMP_PRERUN,   // relay ON,  pump ON,  chiller OFF  (waiting PUMP_PRE_RUN_TICKS)
     COOL_RUNNING,       // relay ON,  pump ON,  chiller ON
-    COOL_PUMP_POSTRUN   // relay ON,  pump ON,  chiller OFF  (waiting PUMP_POST_RUN_TICKS)
+    COOL_PUMP_POSTRUN,  // relay ON,  pump ON,  chiller OFF  (waiting PUMP_POST_RUN_TICKS)
+    COOL_PUMP_FAULT,    // relay OFF, pump OFF, chiller OFF  (dry run / pump error / no feedback, latched until BMS reset)
+    COOL_CHILLER_FAULT  // relay OFF, pump OFF, chiller OFF  (chiller error / no 0x248 reply, latched until BMS reset)
 } cool_state_t;
 
 volatile cool_state_t cool_state = COOL_IDLE;   // for debugging (watch window)
 uint16_t chiller_status = 0;                    // 1 = chiller unit commanded ON
-uint16_t pump_speed = 0;                        // PWM pump duty, %
-
-/* pump command
- *   PWM pump: reconfigure only when the duty changes
- *   CAN pump: 0x258 ON every call while ON; after switching OFF, 0x258 OFF for OFF_FRAME_TICKS, then not sent
- */
-static void pump_cmd(Uint16 on)
-{
-#if defined(PWM_PUMP)
-    Uint16 duty = on ? PUMP_PWM_DUTY : 0;
-    static Uint16 pwm_init = 0;
-    if ((duty != pump_speed) || !pwm_init)
-    {
-        pump_speed = duty;
-        InitEPwmTimer(pump_speed);
-        pwm_init = 1;
-    }
-#elif defined(CAN_PUMP)
-    static Uint16 last_on = 0;
-    static Uint16 off_frames_left = 0;  // OFF frames still to send (0 at power-up: nothing sent)
-
-    if (last_on && !on)
-    {
-        off_frames_left = OFF_FRAME_TICKS;      // just switched OFF
-    }
-    last_on = on;
-
-    if (on || off_frames_left)
-    {
-        if (!on)
-        {
-            off_frames_left--;
-        }
-        pumpData_write(canMap.msg[CAN_OBJ_24].sendData, on ? ON : OFF);
-        CAN_sendMessage(CAN_OBJ_24, NOMINAL_DLC, canMap.msg[CAN_OBJ_24].sendData);
-    }
-#endif
-}
 
 /* chiller unit command
  *   0x238 is sent only after the chiller has been switched ON:
@@ -3896,6 +3861,7 @@ static void chiller_cmd(Uint16 on)
         chillerData_write(canMap.msg[CAN_OBJ_20].sendData, on ? 1 : 0);
         CAN_sendMessage(CAN_OBJ_20, NOMINAL_DLC, canMap.msg[CAN_OBJ_20].sendData);
     }
+    chiller_fault_update(on);           // chiller error from 0x248 -> chiller_fault_code (chiller.c), shown on 0x35 page 6 byte 2
 #endif
 }
 
@@ -3932,6 +3898,25 @@ void chillerCtrl(uint16_t highestT)
     /* 2. state transitions */
     elapsed = CpuTimer0.InterruptCount - state_tick;
 
+    /* pump fault (no water / pump error / no feedback): stop pump + chiller at once in any pump-ON state.
+       Latched: no retry, cooling stays OFF until the BMS is reset (power cycle) */
+    if ((cool_state == COOL_PUMP_PRERUN || cool_state == COOL_RUNNING || cool_state == COOL_PUMP_POSTRUN)
+        && pump_fault_latch())                      // sets pump_fault_code (Pump_PWM.c)
+    {
+        cool_state = COOL_PUMP_FAULT;
+        state_tick = CpuTimer0.InterruptCount;
+        elapsed = 0;
+    }
+
+    /* chiller unit fault (error in 0x248 for 1 s / no 0x248 for 2 s): relay, pump and chiller OFF at once.
+       Latched like the pump fault: cooling stays OFF until the BMS is reset, chiller_fault_code shows why */
+    if ((cool_state == COOL_RUNNING) && chiller_fault_now)   // set by chiller_fault_update() (chiller.c)
+    {
+        cool_state = COOL_CHILLER_FAULT;
+        state_tick = CpuTimer0.InterruptCount;
+        elapsed = 0;
+    }
+
     switch (cool_state)
     {
     case COOL_IDLE:
@@ -3947,7 +3932,7 @@ void chillerCtrl(uint16_t highestT)
         {
             cool_state = COOL_IDLE;                 // chiller never started: pump + relay OFF now
         }
-        else if ((elapsed >= PUMP_PRE_RUN_TICKS) && PUMP_OK())
+        else if ((elapsed >= PUMP_PRE_RUN_TICKS) && pump_ok())
         {
             cool_state = COOL_RUNNING;              // pump has run 10 s: chiller ON
         }
@@ -3973,6 +3958,12 @@ void chillerCtrl(uint16_t highestT)
         }
         break;
 
+    case COOL_PUMP_FAULT:
+        break;                                      // latched: stays here until BMS reset (pump_fault_code shows why)
+
+    case COOL_CHILLER_FAULT:
+        break;                                      // latched: stays here until BMS reset (chiller_fault_code shows why)
+
     default:
         cool_state = COOL_IDLE;
         break;
@@ -3991,9 +3982,11 @@ void chillerCtrl(uint16_t highestT)
     case COOL_RUNNING:
         PDU_getData_local.fixSetChrg.bit.chiller_enable = 1;    // relay ON
         pump_cmd(1);
-        chiller_cmd(PUMP_OK());     // CAN pump fault / feedback lost -> chiller OFF until the pump is OK again
+        chiller_cmd(pump_ok());     // pump feedback not OK -> chiller OFF until the pump is OK again
         break;
 
+    case COOL_PUMP_FAULT:
+    case COOL_CHILLER_FAULT:
     case COOL_IDLE:
     default:
         PDU_getData_local.fixSetChrg.bit.chiller_enable = 0;    // relay OFF

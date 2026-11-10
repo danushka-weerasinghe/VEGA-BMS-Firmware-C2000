@@ -10,6 +10,8 @@
 #include <BMS_I2C.h>
 #include "BMS_controller_CAN.h"
 #include "PDU_matrix.h"     /* PDU_getData_local.charged_energy_acc (Wh) */
+#include "chiller.h"
+
 
 
 // ---------------------------------------------------------
@@ -631,6 +633,23 @@ void broadcast_eeprom_data_over_can(void)
         canMap.msg[CAN_OBJ_9].sendData[2] = fw_update_month;  // e.g. 0x03
         canMap.msg[CAN_OBJ_9].sendData[3] = fw_update_day;    // e.g. 0x25
 
+        canMap.msg[CAN_OBJ_9].sendData[4] = 0x00;
+        canMap.msg[CAN_OBJ_9].sendData[5] = 0x00;
+        canMap.msg[CAN_OBJ_9].sendData[6] = 0x00;
+        canMap.msg[CAN_OBJ_9].sendData[7] = 0x00;
+
+        mux_state = 6;
+    }
+
+    else if (mux_state == 6)
+    {
+        // --- MUX PAGE 5: FIRMWARE UPDATE DATE ---
+        canMap.msg[CAN_OBJ_9].sendData[0] = 0x06; // Mux ID
+
+        canMap.msg[CAN_OBJ_9].sendData[1] = pump_fault_code & 0xFF;     // chiller pump fault: 0 none, 1 dry run, 2 no feedback, 3 CAN pump error
+        canMap.msg[CAN_OBJ_9].sendData[2] = chiller_fault_code & 0xFF;   //
+
+        canMap.msg[CAN_OBJ_9].sendData[3] = 0x00;
         canMap.msg[CAN_OBJ_9].sendData[4] = 0x00;
         canMap.msg[CAN_OBJ_9].sendData[5] = 0x00;
         canMap.msg[CAN_OBJ_9].sendData[6] = 0x00;
