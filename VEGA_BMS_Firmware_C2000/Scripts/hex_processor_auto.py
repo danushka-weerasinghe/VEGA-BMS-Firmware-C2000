@@ -1,10 +1,55 @@
 import sys
 import os
+import re
 import argparse
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import messagebox
 from datetime import datetime
+
+# main_data.h: project root = folder above this Scripts folder
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_HEADER = os.path.join(SCRIPT_DIR, "..", "main_data.h")
+
+# Function to find the selected battery pack (vehicle) in main_data.h
+def get_vehicle_name(header_file):
+    """Return the uncommented pack define in the '---- Select ONE Battery Pack ----' block
+    of main_data.h, e.g. 'ETX_10_kWH'. Returns None if not found or more than one is selected."""
+    try:
+        with open(header_file, "r", encoding="utf-8", errors="ignore") as f:
+            text = f.read()
+    except OSError:
+        print(f"WARNING: {header_file} not found, vehicle name not added")
+        return None
+
+    text = text.replace("\x00", "")                         # in case the file is UTF-16
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)       # drop /* ... */ comments
+
+    start = text.find("Select ONE Battery Pack")
+    if start < 0:
+        print("WARNING: 'Select ONE Battery Pack' not found in main_data.h, vehicle name not added")
+        return None
+    block = text[start:]
+    end = re.search(r"^\s*#\s*if\b", block, flags=re.M)     # block ends at the first #if
+    if end:
+        block = block[:end.start()]
+
+    selected = re.findall(r"^[ \t]*#[ \t]*define[ \t]+(\w+)", block, flags=re.M)  # uncommented only
+    if len(selected) == 1:
+        return selected[0]
+    if not selected:
+        print("WARNING: no battery pack selected in main_data.h, vehicle name not added")
+    else:
+        print(f"WARNING: more than one battery pack selected in main_data.h ({', '.join(selected)}), vehicle name not added")
+    return None
+
+# Function to build the output file name: <base>_<vehicle>_<YYYY_MM_DD_HH_MM_SS>.txt
+def make_output_name(base_name, header_file):
+    vehicle = get_vehicle_name(header_file)
+    timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    if vehicle:
+        return f"{base_name}_{vehicle}_{timestamp}.txt"
+    return f"{base_name}_{timestamp}.txt"
 
 # Function to pad the hex array
 def pad_hex_array(hex_array, divisor):
@@ -54,8 +99,7 @@ def get_user_input():
     # Auto-generate a suggested name with date and time for the GUI too
     if get_file:
         base_name = os.path.splitext(os.path.basename(get_file))[0]
-        timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-        suggested_name = f"{base_name}_{timestamp}.txt"
+        suggested_name = make_output_name(base_name, DEFAULT_HEADER)
         
         save_file = filedialog.asksaveasfilename(
             title="Select file to save data to", 
@@ -97,6 +141,7 @@ if __name__ == "__main__":
         parser.add_argument("input_file", help="The input file from CCS")
         parser.add_argument("--divisor", type=int, default=12, help="Divisor value (default: 12)")
         parser.add_argument("--num_data", type=int, default=32, help="Number of data per line (default: 32)")
+        parser.add_argument("--header", default=DEFAULT_HEADER, help="main_data.h with the selected battery pack (default: ../main_data.h)")
         
         args = parser.parse_args()
         
@@ -109,11 +154,8 @@ if __name__ == "__main__":
         output_dir = os.path.join(directory, "OBD fimware")
         os.makedirs(output_dir, exist_ok=True)
         
-        # 3. Create the date and time string (Format: YYYY_MM_DD_HH_MM_SS)
-        timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-        
-        # 4. Combine them to make the new output file name
-        output_filename = f"{base_name}_{timestamp}.txt"
+        # 3. + 4. Output file name: <base>_<vehicle from main_data.h>_<YYYY_MM_DD_HH_MM_SS>.txt
+        output_filename = make_output_name(base_name, args.header)
         output_path = os.path.join(output_dir, output_filename)
         
         print(f"Processing: {input_path}")
