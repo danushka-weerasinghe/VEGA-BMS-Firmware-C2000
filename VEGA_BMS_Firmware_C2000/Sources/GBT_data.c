@@ -7,16 +7,14 @@
  * @date    2026-10-01
  */
 
-/* Own header ----------------------------------------------------------------*/
-#include "GBT_data.h"
-
-/* Hardware / vendor includes ------------------------------------------------*/
+/* Hardware includes ---------------------------------------------------------*/
 #include "DSP28x_Project.h"         /* Uint16, int16, Uint32 */
 
-/* Project includes ----------------------------------------------------------*/
+/* Own includes --------------------------------------------------------------*/
+#include "GBT_data.h"
 #include "main_data.h"              /* pack / chemistry selection, limits, BMS_data_IC, current_val_A */
 #include "PDU_matrix.h"             /* PDU_getData_i, PDU_getData_local */
-#include "eprom_config.h"           /* nominal_capacity */
+#include "eprom_config.h"
 
 #if (GBT_CHARGING == 1)
 
@@ -50,7 +48,7 @@
      soc < GBT_SOC_BELOW_LOW -> GBT_STS_BELOW_LOW
      otherwise               -> GBT_STS_NORMAL */
 #define GBT_SOC_OVER_HIGH           100     /**< SOC over high, % */
-#define GBT_SOC_BELOW_LOW           1       /**< SOC below low, % */
+#define GBT_SOC_BELOW_LOW             0       /**< SOC below low, % */
 
 /* Communication lost */
 #define GBT_COMM_LOST_COUNT         4000    /**< Watchdog count above this = sensor comm lost (value untrusted) */
@@ -234,10 +232,12 @@ static void GBT_status_update(void)
     {
         soc_state = GBT_STS_OVER_HIGH;
     }
+#if (GBT_SOC_BELOW_LOW > 0)                                         // ← add
     else if (PDU_getData_i.display_soc_val < GBT_SOC_BELOW_LOW)
     {
         soc_state = GBT_STS_BELOW_LOW;
     }
+#endif                                                              // ← add
     else
     {
         soc_state = GBT_STS_NORMAL;

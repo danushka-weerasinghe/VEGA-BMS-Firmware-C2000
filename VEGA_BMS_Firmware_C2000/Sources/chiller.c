@@ -5,11 +5,11 @@
  * @date    2024-06-06
  */
 
-/* Own header ----------------------------------------------------------------*/
-#include "chiller.h"
-
-/* Hardware / vendor includes ------------------------------------------------*/
+/* Hardware includes ---------------------------------------------------------*/
 #include "DSP28x_Project.h"         /* ScibRegs, CpuTimer0 */
+
+/* Own includes --------------------------------------------------------------*/
+#include "chiller.h"
 
 /* Private defines -----------------------------------------------------------*/
 #define COMPRESSOR_SPEED            3200    /**< SCI chiller compressor speed command, rpm */

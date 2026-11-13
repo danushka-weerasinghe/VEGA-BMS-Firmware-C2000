@@ -12,15 +12,14 @@
  * @date    2024-05-20
  */
 
-/* Own header ----------------------------------------------------------------*/
-#include "Pump_PWM.h"
-
-/* Hardware / vendor includes ------------------------------------------------*/
+/* Hardware includes ---------------------------------------------------------*/
 #include "DSP28x_Project.h"         /* EPwm2Regs, ECap2Regs, GPIO, PIE, CpuTimer0 */
 
-/* Project includes ----------------------------------------------------------*/
+/* Own includes --------------------------------------------------------------*/
+#include "Pump_PWM.h"
 #include "main_data.h"              /* PWM_PUMP / CAN_PUMP (vehicle selection) */
 #include "BMS_controller_CAN.h"     /* canMap, CAN_sendMessage, CAN_OBJ_24 (CAN pump 0x258) */
+
 
 /* Private defines -----------------------------------------------------------*/
 /* PWM pump drive */
