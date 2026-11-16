@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><templates><template autoinsert="false" context="org.eclipse.cdt.core.cHeader.contenttype_context" deleted="false" description="C header following the C File Layout Standard: every section with an example; delete unused ones" enabled="true" name="VEGA C header">/**
+ * @file    ${file_name}
+ * @brief   &lt;One sentence: what this module does.&gt;
+ * @author  ${user}
+ * @date    ${date}
+ */
+
+#ifndef ${include_guard_symbol}
+#define ${include_guard_symbol}
+
+/* System includes -----------------------------------------------------------*/
+#include &lt;stdint.h&gt;                 /* uint16_t, uint32_t */
+
+/* Compiler includes ---------------------------------------------------------*/
+/* #include "&lt;compiler header&gt;.h" *//* compiler-specific features */
+
+/* Hardware includes ---------------------------------------------------------*/
+#include "DSP28x_Project.h"         /* device registers, Uint16 */
+
+/* Third-party includes ------------------------------------------------------*/
+/* #include "&lt;library&gt;.h" */        /* external library */
+
+/* Own includes --------------------------------------------------------------*/
+/* #include "&lt;other module&gt;.h" */   /* other team module */
+
+/* Public defines ------------------------------------------------------------*/
+#define MODULE_EXAMPLE_LIMIT        10U/**&lt; &lt;Meaning&gt;, &lt;unit&gt; */
+
+/* Public enums --------------------------------------------------------------*/
+/**
+ * @brief   &lt;What the values mean.&gt;
+ */
+typedef enum
+{
+    MODULE_STATE_OFF = 0,           /**&lt; &lt;Meaning&gt; */
+    MODULE_STATE_ON                 /**&lt; &lt;Meaning&gt; */
+} module_state_t;
+
+/* Public structs ------------------------------------------------------------*/
+/**
+ * @brief   &lt;What the struct holds.&gt;
+ */
+typedef struct
+{
+    Uint16          value;          /**&lt; &lt;Meaning&gt;, &lt;unit&gt; */
+    module_state_t  state;          /**&lt; &lt;Meaning&gt; */
+} module_data_t;
+
+/* Extern declarations -------------------------------------------------------*/
+/** @brief &lt;Meaning&gt;, &lt;unit&gt;. Written by &lt;function&gt;. */
+extern volatile Uint16 module_example_count;
+
+/* Public function prototypes ------------------------------------------------*/
+/**
+ * @brief   &lt;What the function does.&gt;
+ * @note    &lt;Call once at start-up, before any other module_ function.&gt;
+ */
+void module_init(void);
+
+/**
+ * @brief   &lt;What the function does.&gt;
+ * @param[in] index  &lt;Meaning, unit, range.&gt;
+ * @return  &lt;Return value, unit.&gt;
+ */
+Uint16 module_get_value(Uint16 index);
+
+/**
+ * @brief   &lt;Interrupt source&gt; interrupt handler.
+ * @note    Linked into the PIE vector table. Never call from code.
+ */
+__interrupt void module_isr(void);
+
+#endif /* ${include_guard_symbol} */
+</template><template autoinsert="false" context="org.eclipse.cdt.core.cSource.contenttype_context" deleted="false" description="C source following the C File Layout Standard: every section with an example; delete unused ones" enabled="true" name="VEGA C source">/**
+ * @file    ${file_name}
+ * @brief   &lt;One sentence: what this module does.&gt;
+ * @author  ${user}
+ * @date    ${date}
+ */
+
+/* System includes -----------------------------------------------------------*/
+#include &lt;stdint.h&gt;                 /* uint16_t, uint32_t */
+
+/* Compiler includes ---------------------------------------------------------*/
+/* #include "&lt;compiler header&gt;.h" *//* compiler-specific features */
+
+/* Hardware includes ---------------------------------------------------------*/
+#include "DSP28x_Project.h"         /* device registers, Uint16 */
+
+/* Third-party includes ------------------------------------------------------*/
+/* #include "&lt;library&gt;.h" */        /* external library */
+
+/* Own includes --------------------------------------------------------------*/
+#include "${file_base}.h"
+/* #include "&lt;other module&gt;.h" */   /* other team module */
+
+/* Private defines -----------------------------------------------------------*/
+#define EXAMPLE_TIMEOUT_TICKS       20U/**&lt; &lt;Meaning&gt;, &lt;unit&gt; */
+
+/* Private enums -------------------------------------------------------------*/
+/**
+ * @brief   &lt;What the values mean.&gt;
+ */
+typedef enum
+{
+    STEP_IDLE = 0,                  /**&lt; &lt;Meaning&gt; */
+    STEP_RUN                        /**&lt; &lt;Meaning&gt; */
+} step_t;
+
+/* Private structs -----------------------------------------------------------*/
+/**
+ * @brief   &lt;What the struct holds.&gt;
+ */
+typedef struct
+{
+    Uint16  count;                  /**&lt; &lt;Meaning&gt;, &lt;unit&gt; */
+    step_t  step;                   /**&lt; &lt;Meaning&gt; */
+} work_t;
+
+/* Private function prototypes -----------------------------------------------*/
+static void example_helper(Uint16 value);
+
+/* Global variables ----------------------------------------------------------*/
+volatile Uint16 module_example_count = 0U;  /**&lt; See ${file_base}.h */
+
+/* Private variables ---------------------------------------------------------*/
+static work_t work = {0U, STEP_IDLE};       /**&lt; &lt;Meaning&gt;, written by &lt;function&gt; */
+
+/* Public functions ----------------------------------------------------------*/
+/**
+ * @brief   &lt;What the function does.&gt;
+ * @see     ${file_base}.h
+ */
+void module_init(void)
+{
+    work.count = 0U;
+    work.step  = STEP_IDLE;
+}
+
+/**
+ * @brief   &lt;What the function does.&gt;
+ * @see     ${file_base}.h
+ */
+Uint16 module_get_value(Uint16 index)
+{
+    example_helper(index);
+    return work.count;
+}
+
+/* Interrupt service routines ------------------------------------------------*/
+/**
+ * @brief   &lt;Interrupt source&gt; interrupt handler.
+ * @see     ${file_base}.h
+ */
+__interrupt void module_isr(void)
+{
+    module_example_count++;         /* &lt;work done in the ISR&gt; */
+    PieCtrlRegs.PIEACK.all = PIEACK_GROUP1; /* acknowledge the PIE group (change to the right group) */
+}
+
+/* Private functions ---------------------------------------------------------*/
+/**
+ * @brief   &lt;What the function does.&gt;
+ * @param[in] value  &lt;Meaning, unit, range.&gt;
+ */
+static void example_helper(Uint16 value)
+{
+    work.count = value;
+    work.step  = STEP_RUN;
+}
+
+/* end of file */
+</template></templates>
