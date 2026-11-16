@@ -504,8 +504,23 @@ void main(void)
                 else
                 {
                     charge_state = 2;
-                    PDU_getData_local.fixSetChrg.all = 0;
-                    charge_complete = 0;
+                    if (PDU_setData_local.fixSetS.bit.charger_connected
+                            && PDU_getData_local.fixSetChrg.bit.charge_complete_flag)
+                    {
+                        /* Charge finished and the plug is still in. The EVCU leaves state 4 to end
+                         * the session: keep CV_mode + charge complete on 0x32 so it never reads
+                         * "CV off before complete" (which sends it back to full current). */
+                        PDU_getData_local.fixSetChrg.all = 0;
+                        PDU_getData_local.fixSetChrg.bit.cv_mode = 1;
+                        PDU_getData_local.fixSetChrg.bit.charge_complete_flag =
+                                1;
+                        charge_complete = 3; /* if the EVCU returns to state 4, charge_ctrl keeps cv_mode = 1 */
+                    }
+                    else
+                    {
+                        PDU_getData_local.fixSetChrg.all = 0; /* unplugged, or not finished: as before */
+                        charge_complete = 0;
+                    }
                     reset_charge_session();
 
                     // SOC Estimation error compare with voltage; if the min cell voltage is less than 3.15 and SOC is above 20%

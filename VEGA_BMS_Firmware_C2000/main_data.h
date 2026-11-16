@@ -486,7 +486,9 @@
  * battery data
  */
 #define CHARGE_COMP_CURRENT_THRESHOLD -500
-#define CV_END_CURRENT 500
+#define CV_END_CURRENT 500 /* 10 A (0.01 A units): CV finished when the current falls below this */
+#define CV_END_CELL_VOLTAGE   35500  /* 3.55 V (0.1 mV units): backstop if the current never falls */
+#define CV_END_HOLD_TICKS     40     /* 2 s at 50 ms: how long the backstop voltage must hold */
 #define dcov_threshold 35500
 #define dcuv_threshold 28000
 #define dcov_recovery_threshold 36000

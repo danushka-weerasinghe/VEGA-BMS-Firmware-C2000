@@ -387,7 +387,7 @@ void calc_soc_soh(double current_value, unsigned int max_cell_voltage,
     /*Change this to include max cell voltage if charging and min cell voltage if discharging*/
     /*Add current condition*/
     if ((state == CHARGING) && (max_cell_voltage >= CHARGE_CELL_VOLTAGE_LIMIT)
-            && (wait_count == 0)) /*Charge mode*/
+            && (wait_count == 0) && (charge_complete == 0)) /*Charge mode: only to start CV*/
     {
         if (hvcount >= 40)
         {
@@ -482,6 +482,7 @@ void charge_ctrl(unsigned int highest_cell_v, int16 charge_current, float soc)
     Uint8 static cv_slave;
     Uint8 static chargeComp_slave;
     Uint8 static charge_comp_phase = 0;
+    Uint16 static cv_hv_ticks = 0;        /* NEW: ticks the highest cell has stayed >= 3.55 V in CV */
 
 #ifdef MASTER
     if (slave_status)
@@ -521,14 +522,38 @@ void charge_ctrl(unsigned int highest_cell_v, int16 charge_current, float soc)
     {
         PDU_getData_local.fixSetChrg.bit.cv_mode = 1;
     }
-    else if(charge_complete == 0)
+    else if (charge_complete == 0)
     {
         PDU_getData_local.fixSetChrg.bit.cv_mode = 0;
     }
 
-    if ((PDU_getData_local.fixSetChrg.bit.cv_mode) && (abs(charge_current) < CV_END_CURRENT) && (charge_complete == 2))
+    /* End of CV: current below 5 A, or the highest cell held at >= 3.55 V for 2 s.
+     * charge_complete == 2 means CV is running and SOC was set to 100 (soc_calc_new case 94). */
+
+    if ((PDU_getData_local.fixSetChrg.bit.cv_mode) && (charge_complete == 2))
     {
-        charge_complete = 3;
+        if (highest_cell_v >= CV_END_CELL_VOLTAGE)
+        {
+            if (cv_hv_ticks < CV_END_HOLD_TICKS)
+            {
+                cv_hv_ticks++;
+            }
+        }
+        else
+        {
+            cv_hv_ticks = 0; /* must be continuous */
+        }
+
+        if ((abs(charge_current) < CV_END_CURRENT)
+                || (cv_hv_ticks >= CV_END_HOLD_TICKS))
+        {
+            charge_complete = 3; /* -> charge_comp_phase 0..3 below -> charge_complete_flag */
+        }
+    }
+    else
+    {
+        cv_hv_ticks = 0;
+
     }
 
     if (charge_current < CHARGE_CURRENT_THRESHOLD) /* Charge current exceeded limit */
