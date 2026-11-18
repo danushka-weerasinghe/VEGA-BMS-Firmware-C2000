@@ -38,7 +38,7 @@
 
 /* PWM pump dry run: the unloaded pump speeds up (with water 5250-6550 rpm, dry 9561 rpm) */
 #define PUMP_DRY_RPM                7500            /**< Faster than this = no water, rpm (250 Hz feedback x 30) */
-#define PUMP_DRY_DETECT_TICKS       60              /**< 3 s above PUMP_DRY_RPM = dry run, CpuTimer0 ticks */
+#define PUMP_DRY_DETECT_TICKS       300             /**< 15 s above PUMP_DRY_RPM = dry run, CpuTimer0 ticks */
 
 /* No feedback: pump commanded ON but not turning (blocked / not powered / FB wire open / 0x268 missing) */
 #define PUMP_NOFB_DETECT_TICKS      100             /**< 5 s without feedback = no feedback fault, CpuTimer0 ticks */

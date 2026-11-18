@@ -359,12 +359,14 @@ void PDU_setData_read(Uint16* EVCU_data)
 void PDU_setData_read_ODO(Uint16* ODO_bytes)
 {
     PDU_setData_local.dataID = ODO_bytes[0];
-    if (PDU_setData_local.dataID == 0)
+    if (PDU_setData_local.dataID == 1)                              /* DBC: VCU_RD_odo is mux 1 */
     {
-        PDU_setData_local.odo_value.byte.ODO_BYTE1 = ODO_bytes[1];
-        PDU_setData_local.odo_value.byte.ODO_BYTE2 = ODO_bytes[2];
-        PDU_setData_local.odo_value.byte.ODO_BYTE3 = ODO_bytes[3];
-        PDU_setData_local.odo_value.byte.ODO_BYTE4 = ODO_bytes[4];
+        /* DBC @0 = Motorola (big-endian): CAN byte 1 = high byte, CAN byte 4 = low byte.
+           ODO_BYTE1 is the lowest byte of odo_value.all, so the order is reversed. */
+        PDU_setData_local.odo_value.byte.ODO_BYTE1 = ODO_bytes[4];  /* bits  7..0  */
+        PDU_setData_local.odo_value.byte.ODO_BYTE2 = ODO_bytes[3];  /* bits 15..8  */
+        PDU_setData_local.odo_value.byte.ODO_BYTE3 = ODO_bytes[2];  /* bits 23..16 */
+        PDU_setData_local.odo_value.byte.ODO_BYTE4 = ODO_bytes[1];  /* bits 31..24 */
     }
 }
 
