@@ -803,7 +803,7 @@ void C2000_SCI_int(void)
     ScibRegs.SCICTL2.bit.TXINTENA = 0;
     ScibRegs.SCICTL2.bit.RXBKINTENA = 0;
 
-    ScibRegs.SCIHBAUD = 0x12;  // 9600 baud @LSPCLK = 22.5MHz (90 MHz SYSCLK).
+    ScibRegs.SCIHBAUD = 0x12;  // 600 baud @LSPCLK = 22.5MHz (90 MHz SYSCLK).
     ScibRegs.SCILBAUD = 0x50;
 
     //SciaRegs.SCIHBAUD    =0x0000;
@@ -1133,6 +1133,7 @@ void MspConfig(Uint8 pack_num, Uint8 controll_byte, Uint8 op_mode_con)
     Uint8 total_data_length = 0;
     Uint16 CRC_val = 0xFFFF;
     //send_data_buffer[];
+    if (pack_num >= 2) pack_num = 0;   /* send_data_buffer[2][50] */
     send_data_buffer[pack_num][0] = 0xAA;
     send_data_buffer[pack_num][1] = 0x0B;
     send_data_buffer[pack_num][4] = controll_byte;
@@ -1166,6 +1167,7 @@ void Resend_packet(Uint8 pack_num, Uint8 op_mode_con)
 {
     Uint16 CRC_val = 0;
     Uint8 total_data_length = 0;
+    if (pack_num >= 2) pack_num = 0;   /* send_data_buffer[2][50] */
 //flag
     send_data_buffer[pack_num][0] = 0xAA;
     send_data_buffer[pack_num][1] = 0x0B;
@@ -1197,6 +1199,7 @@ void Request_classified(Uint8 pack_num, Uint8 op_mode_con)
 {
     Uint16 CRC_val = 0;
     Uint8 total_data_length = 0;
+    if (pack_num >= 2) pack_num = 0;   /* send_data_buffer[2][50] */
 //flag
     send_data_buffer[pack_num][0] = 0xAA;
     send_data_buffer[pack_num][1] = 0x0B;
@@ -1237,6 +1240,7 @@ void Request_humidity(Uint8 pack_num, Uint8 op_mode_con)
 {
     Uint16 CRC_val = 0;
     Uint8 total_data_length = 0;
+    if (pack_num >= 2) pack_num = 0;   /* send_data_buffer[2][50] */
 //flag
     send_data_buffer[pack_num][0] = 0xAA;
     send_data_buffer[pack_num][1] = 0x0B;
@@ -1277,6 +1281,7 @@ void Request_openWire(Uint8 pack_num, Uint8 op_mode_con)
 {
     Uint16 CRC_val = 0;
     Uint8 total_data_length = 0;
+    if (pack_num >= 2) pack_num = 0;   /* send_data_buffer[2][50] */
 //flag
     send_data_buffer[pack_num][0] = 0xAA;
     send_data_buffer[pack_num][1] = 0x0B;
@@ -1317,6 +1322,7 @@ void Request_all_data(Uint8 IC_no, Uint8 pack_num, Uint8 op_mode_con)
 {
     Uint16 CRC_val = 0;
     Uint8 total_data_length = 0;
+    if (pack_num >= 2) pack_num = 0;   /* send_data_buffer[2][50] */
     //flag
     send_data_buffer[pack_num][0] = 0xAA;
     send_data_buffer[pack_num][1] = 0x0B;
@@ -3217,7 +3223,7 @@ void main_msp_config_loop()
             if (Resend_data_flag)
             {
                 Resend_data_flag = 0;
-                MspConfig(send_packet_code & 0x3, DEFAULT, Controller.op_mode_main_set);
+                MspConfig(0, DEFAULT, Controller.op_mode_main_set);
                 send_packet_code++;
             }
             else if (Resend_request_flag)
