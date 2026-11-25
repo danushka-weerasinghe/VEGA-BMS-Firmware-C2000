@@ -223,7 +223,7 @@
 #define STAT_REG                4
 #define DATA_LOOP_COUNT_n       5
 #define SEND_DATA_FREQ          8 //(val/10) seconds
-#define FC_CONTACTOR            1 // Board HAS fast-charge contactor hardware
+#define FC_CONTACTOR            0 // Board HAS fast-charge contactor hardware
 #define BALANCING_ENABLE        1
 #define PRECHARGE_DELAY         20
 #define GBT_CHARGING            1

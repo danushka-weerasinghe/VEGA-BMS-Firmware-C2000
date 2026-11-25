@@ -1074,30 +1074,33 @@ void soc_calc_new(double current_value, unsigned int max_cell_voltage, unsigned 
 
 
         case 94:
-            if (max_cell_voltage > CHARGE_CELL_VOLTAGE_LIMIT)
-            {
-                if (charge_complete == 1)
-                {
-                    soc_reset = 101;
-                    *soc = 100;
+        /* charge_complete == 1: calc_soc_soh already saw vmax >= 3.50 V for 2 s while charging.
+         * No second voltage check: at CV the EVCU pins the OBC voltage, the current falls to 0 and
+         * the cells relax below 3.50 V within ~1 s, so a check once per 5 s usually missed it. */
+        if ((charge_complete == 1)
+                && (PDU_setData_local.fixSetS.bit.EVCU_State == 4))
+        {
+            soc_reset = 101;
+            *soc = 100;
 
-                    Temp_soc = 100.0f;
-                    confirmed_soc = 100.0f;
-                    last_saved_soc = 100.0f;
-                    pending_backup_save = 1;
+            Temp_soc = 100.0f;
+            confirmed_soc = 100.0f;
+            last_saved_soc = 100.0f;
+            pending_backup_save = 1;
 
-                    charge_complete = 2;
+            charge_complete = 2;
 
-                    calib_full_charge_done();
-                }
-            }
-            else if(PDU_getData_local.fixSetChrg.bit.cv_mode == 0)
-            {
-                charge_complete = 0;
-            }
+            calib_full_charge_done();
+        }
 
-            soc_count++;
-            break;
+        else if ((max_cell_voltage <= CHARGE_CELL_VOLTAGE_LIMIT)
+                && (PDU_getData_local.fixSetChrg.bit.cv_mode == 0))
+        {
+            charge_complete = 0;
+        }
+
+        soc_count++;
+        break;
 
         case 20: calib_save_step(0); soc_count++; break;   // snapshot, main   0x0170
         case 22: calib_save_step(1); soc_count++; break;   // snapshot, backup 0x0178
